@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { getPortalSession } from "@/lib/portal-auth";
 import { prisma } from "@/lib/db";
 import PaymentPanel from "./payment-panel";
 import { Badge, statusTone } from "@/components/ui/badge";
@@ -12,10 +13,12 @@ export default async function InvoiceDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/login");
-
   const { id } = await params;
+
+  const session = await getSession();
+  const portalSession = session ? null : await getPortalSession();
+  if (!session && !portalSession) redirect("/login");
+
   const invoice = await prisma.invoice.findUnique({
     where: { id },
     include: {
@@ -26,6 +29,7 @@ export default async function InvoiceDetailPage({
   });
 
   if (!invoice) notFound();
+  if (portalSession && invoice.studentId !== portalSession.studentId) redirect("/portal");
 
   const school = await prisma.school.findFirst();
 
@@ -140,7 +144,7 @@ export default async function InvoiceDetailPage({
           </div>
         </div>
 
-        <PaymentPanel invoiceId={invoice.id} balance={balance} status={invoice.status} />
+        <PaymentPanel invoiceId={invoice.id} balance={balance} status={invoice.status} isPortal={!!portalSession} />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { getPortalSession } from "@/lib/portal-auth";
 import { prisma } from "@/lib/db";
 import { gradeFor } from "@/lib/grading";
 import PrintButton from "./print-button";
@@ -12,10 +13,12 @@ export default async function ReportCardPage({
 }: {
   params: Promise<{ id: string; studentId: string }>;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/login");
-
   const { id: examId, studentId } = await params;
+
+  const session = await getSession();
+  const portalSession = session ? null : await getPortalSession();
+  if (!session && !portalSession) redirect("/login");
+  if (portalSession && portalSession.studentId !== studentId) redirect("/portal");
 
   const [exam, student, school] = await Promise.all([
     prisma.exam.findUnique({

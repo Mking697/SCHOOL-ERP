@@ -187,9 +187,34 @@ Phase 10 -- Setup Wizard + Branding (DONE, this change):
   per-request dynamic rendering, `instant = false` allows the build to
   accept a fully-blocking (non-prerenderable) route.
 
+Phase 11 -- Student/Parent Portal (DONE, this change):
+- `/portal/login` -- separate login for students/parents using Admission No
+  + Password (never email/staff credentials). Own session cookie
+  (`school_erp_portal_session`), own JWT secret derivation, own 30-day
+  session -- architecturally isolated from the staff session so a portal
+  login can never escalate into staff access or vice versa.
+- Portal login is **opt-in per student**: `Student.portalPasswordHash` is
+  null by default. A Super Admin/School Admin activates/resets it from the
+  student detail page ("Student / Parent Portal" panel) and hands the
+  password to the parent directly -- there's no self-service "forgot
+  password" (no email/SMS gateway wired up by default).
+- Portal pages (mobile-first, bottom tab bar on phones): Dashboard
+  (attendance %, pending fees, upcoming homework, latest notices),
+  Attendance history, Fee Invoices (view + Pay Online via Razorpay),
+  Homework, Exams (links to the real report card), Notices.
+- The existing ID Card, Report Card and Fee Invoice pages (built for
+  staff) now also accept a portal session, scoped so a parent can only
+  ever open their OWN child's documents -- reuses the same print-quality
+  layouts instead of duplicating them.
+- Razorpay online payment endpoints (`/api/payments/razorpay/order` and
+  `/verify`) now accept a portal session too, scoped to that student's own
+  invoices only.
+- Added a web app manifest + generated icon (`src/app/manifest.ts`,
+  `src/app/icon.tsx`, via Next's native `next/og` ImageResponse -- no
+  binary asset files needed) so the whole app is installable as a PWA
+  ("Add to Home Screen") from mobile browsers.
+
 Still planned (see conversation/PLAN.md for full detail):
-- Phase 11: Student/Parent Portal -- separate login via Student ID +
-  password, read-only dashboards, PWA installable.
 - Phase 12: Central Vendor/Billing Server (separate deployable app) --
   Developer/vendor login, per-school subscription tracking, Razorpay
   Subscriptions (Monthly/Quarterly/Half-yearly/Yearly), hard-block

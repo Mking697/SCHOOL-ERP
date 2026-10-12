@@ -118,6 +118,11 @@ model Student {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Student/Parent portal login -- shared credential (Admission No +
+  // password), set/reset by a Super Admin/School Admin from the student
+  // detail page. Null means the portal login isn't activated yet.
+  portalPasswordHash String?
+
   attendance Attendance[]
   invoices   Invoice[]
   marks      Mark[]

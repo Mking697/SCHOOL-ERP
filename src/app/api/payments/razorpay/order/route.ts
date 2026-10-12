@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { getPortalSession } from "@/lib/portal-auth";
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session) {
+  const portalSession = session ? null : await getPortalSession();
+  if (!session && !portalSession) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -26,6 +28,11 @@ export async function POST(req: NextRequest) {
   const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
   if (!invoice) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+  }
+  // A portal (parent/student) session may only ever pay for its OWN
+  // student's invoice, never someone else's by guessing an invoiceId.
+  if (portalSession && invoice.studentId !== portalSession.studentId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });

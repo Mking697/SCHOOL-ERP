@@ -17,10 +17,12 @@ export default function PaymentPanel({
   invoiceId,
   balance,
   status,
+  isPortal = false,
 }: {
   invoiceId: string;
   balance: number;
   status: string;
+  isPortal?: boolean;
 }) {
   const router = useRouter();
   const [amount, setAmount] = useState(balance.toFixed(2));
@@ -112,36 +114,56 @@ export default function PaymentPanel({
   return (
     <Card className="print:hidden">
       <CardHeader>
-        <p className="text-sm font-semibold text-slate-800">Record Payment</p>
+        <p className="text-sm font-semibold text-slate-800">
+          {isPortal ? "Pay Fees" : "Record Payment"}
+        </p>
       </CardHeader>
       <CardBody>
         {error && <p className="text-rose-600 text-sm mb-3">{error}</p>}
-        <form onSubmit={recordCashPayment} className="flex gap-3 items-end flex-wrap">
-          <div>
-            <Label>Amount</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-32"
-            />
+        {isPortal ? (
+          <div className="flex gap-3 items-end flex-wrap">
+            <div>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-32"
+              />
+            </div>
+            <Button type="button" variant="primary" onClick={payOnline} disabled={loading}>
+              Pay Online (Razorpay)
+            </Button>
           </div>
-          <div>
-            <Label>Method</Label>
-            <Select value={method} onChange={(e) => setMethod(e.target.value)} className="w-40">
-              <option value="CASH">Cash</option>
-              <option value="BANK_TRANSFER">Bank Transfer</option>
-              <option value="CHEQUE">Cheque</option>
-            </Select>
-          </div>
-          <Button type="submit" variant="success" disabled={loading}>
-            Record Payment
-          </Button>
-          <Button type="button" variant="primary" onClick={payOnline} disabled={loading}>
-            Pay Online (Razorpay)
-          </Button>
-        </form>
+        ) : (
+          <form onSubmit={recordCashPayment} className="flex gap-3 items-end flex-wrap">
+            <div>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-32"
+              />
+            </div>
+            <div>
+              <Label>Method</Label>
+              <Select value={method} onChange={(e) => setMethod(e.target.value)} className="w-40">
+                <option value="CASH">Cash</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="CHEQUE">Cheque</option>
+              </Select>
+            </div>
+            <Button type="submit" variant="success" disabled={loading}>
+              Record Payment
+            </Button>
+            <Button type="button" variant="primary" onClick={payOnline} disabled={loading}>
+              Pay Online (Razorpay)
+            </Button>
+          </form>
+        )}
       </CardBody>
     </Card>
   );

@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { getPortalSession } from "@/lib/portal-auth";
 import { prisma } from "@/lib/db";
 import PrintButton from "./print-button";
 import { BrandMark } from "@/components/ui/brand-mark";
@@ -11,10 +12,14 @@ export default async function StudentIdCardPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/login");
-
   const { id } = await params;
+
+  const session = await getSession();
+  const portalSession = session ? null : await getPortalSession();
+  if (!session && !portalSession) redirect("/login");
+  // A portal (parent/student) session may only ever view ITS OWN student's
+  // documents, never another student's by guessing/changing the URL id.
+  if (portalSession && portalSession.studentId !== id) redirect("/portal");
   const [student, school] = await Promise.all([
     prisma.student.findUnique({
       where: { id },

@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { getPortalSession } from "@/lib/portal-auth";
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session) {
+  const portalSession = session ? null : await getPortalSession();
+  if (!session && !portalSession) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -39,6 +41,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
+  // Scope: a portal session may only confirm payment for its own invoice.
+  if (portalSession && invoice.studentId !== portalSession.studentId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   await prisma.payment.create({
     data: {
       invoiceId,
@@ -46,7 +53,7 @@ export async function POST(req: NextRequest) {
       method: "ONLINE",
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,
-      recordedBy: session.email,
+      recordedBy: session ? session.email : `portal:${portalSession!.admissionNo}`,
     },
   });
 

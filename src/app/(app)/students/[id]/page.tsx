@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import StudentExtras from "./student-extras";
+import PortalAccessPanel from "./portal-access-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,6 +108,12 @@ export default async function StudentDetailPage({
           </div>
         </CardBody>
       </Card>
+
+      <PortalAccessPanel
+        studentId={student.id}
+        admissionNo={student.admissionNo}
+        hasPortalAccess={!!student.portalPasswordHash}
+      />
 
       <StudentExtras
         studentId={student.id}
