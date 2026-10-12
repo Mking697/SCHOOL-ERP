@@ -45,7 +45,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5 + Phase 6 done)
+## Current status (Phase 0-7 done)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -102,3 +102,14 @@ Phase 6 -- Communication & Engagement:
 
 Next (Phase 7): Facilities & Operations (Transport, Library, Inventory, Medical,
 Visitor Management) -- see PLAN.md.
+
+Phase 7 -- Facilities & Operations:
+- Transport Routes with vehicle/driver info and student assignment (/transport)
+- Library: book catalog, issue/return with live available-copies tracking (/library)
+- Inventory & Assets tracking (/inventory)
+- Health Records per student (blood group, allergies, emergency contact) --
+  API only for now (/api/health-records), no dedicated UI page yet
+- Visitor Management with check-in/check-out (/visitors)
+
+Next (Phase 8): Advanced features (Behavior tracking, E-learning, U-Dise reporting,
+Analytics dashboards, Biometric integration) -- see PLAN.md.
