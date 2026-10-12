@@ -37,9 +37,9 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 -- Foundation)
+## Current status (Phase 0 + Phase 1 done)
 
-Done:
+Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
 - Docker Compose self-host stack (app + Postgres + auto-migrate/seed)
 - install.ps1 / update.ps1 for Windows
@@ -47,5 +47,12 @@ Done:
 - Core schema: School, License (stub), User/Role, ClassLevel, Section,
   Teacher, Parent, Student, Attendance
 
-Next (Phase 1): Student Information System CRUD, Admissions, Enquiry,
-Student ID card generation -- see PLAN.md.
+Phase 1 -- Student Information System:
+- Classes & Sections management (/classes)
+- Student admission form (/students/new) with auto-generated admission number
+- Student list with search (/students)
+- Student detail view (/students/[id])
+- Printable Student ID Card (/students/[id]/id-card)
+- Admission Enquiries tracking (/enquiries) with status (NEW/FOLLOW_UP/ADMITTED/CLOSED)
+
+Next (Phase 2): Attendance + Timetable + Holidays -- see PLAN.md.
