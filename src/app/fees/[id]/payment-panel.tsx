@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input, Label, Select } from "@/components/ui/input";
+import { CheckCircle2, Printer } from "lucide-react";
 
 declare global {
   interface Window {
@@ -26,15 +30,16 @@ export default function PaymentPanel({
 
   if (status === "PAID") {
     return (
-      <div className="bg-white rounded-lg shadow p-4 text-center text-green-700 print:hidden">
-        Invoice fully paid.
-        <button
-          onClick={() => window.print()}
-          className="block mx-auto mt-2 bg-gray-700 text-white rounded px-4 py-2 text-sm"
-        >
-          Print Receipt
-        </button>
-      </div>
+      <Card className="print:hidden">
+        <CardBody className="text-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+          <p className="text-emerald-700 font-medium">Invoice fully paid</p>
+          <Button variant="secondary" size="sm" onClick={() => window.print()} className="mt-3">
+            <Printer className="w-3.5 h-3.5" />
+            Print Receipt
+          </Button>
+        </CardBody>
+      </Card>
     );
   }
 
@@ -105,47 +110,39 @@ export default function PaymentPanel({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 print:hidden">
-      <h2 className="font-semibold mb-3">Record Payment</h2>
-      {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-      <form onSubmit={recordCashPayment} className="flex gap-2 items-end flex-wrap">
-        <div>
-          <label className="block text-xs mb-1">Amount</label>
-          <input
-            type="number"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="border rounded px-3 py-2 text-sm w-32"
-          />
-        </div>
-        <div>
-          <label className="block text-xs mb-1">Method</label>
-          <select
-            value={method}
-            onChange={(e) => setMethod(e.target.value)}
-            className="border rounded px-3 py-2 text-sm"
-          >
-            <option value="CASH">Cash</option>
-            <option value="BANK_TRANSFER">Bank Transfer</option>
-            <option value="CHEQUE">Cheque</option>
-          </select>
-        </div>
-        <button
-          disabled={loading}
-          className="bg-green-600 text-white rounded px-4 py-2 text-sm disabled:opacity-50"
-        >
-          Record Payment
-        </button>
-        <button
-          type="button"
-          onClick={payOnline}
-          disabled={loading}
-          className="bg-blue-600 text-white rounded px-4 py-2 text-sm disabled:opacity-50"
-        >
-          Pay Online (Razorpay)
-        </button>
-      </form>
-    </div>
+    <Card className="print:hidden">
+      <CardHeader>
+        <p className="text-sm font-semibold text-slate-800">Record Payment</p>
+      </CardHeader>
+      <CardBody>
+        {error && <p className="text-rose-600 text-sm mb-3">{error}</p>}
+        <form onSubmit={recordCashPayment} className="flex gap-3 items-end flex-wrap">
+          <div>
+            <Label>Amount</Label>
+            <Input
+              type="number"
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-32"
+            />
+          </div>
+          <div>
+            <Label>Method</Label>
+            <Select value={method} onChange={(e) => setMethod(e.target.value)} className="w-40">
+              <option value="CASH">Cash</option>
+              <option value="BANK_TRANSFER">Bank Transfer</option>
+              <option value="CHEQUE">Cheque</option>
+            </Select>
+          </div>
+          <Button type="submit" variant="success" disabled={loading}>
+            Record Payment
+          </Button>
+          <Button type="button" variant="primary" onClick={payOnline} disabled={loading}>
+            Pay Online (Razorpay)
+          </Button>
+        </form>
+      </CardBody>
+    </Card>
   );
 }

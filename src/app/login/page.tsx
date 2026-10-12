@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { GraduationCap, AlertCircle } from "lucide-react";
+import { Input, Label } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,47 +29,63 @@ export default function LoginPage() {
         return;
       }
       router.push("/dashboard");
+      router.refresh();
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg p-8 w-full max-w-sm space-y-4"
-      >
-        <h1 className="text-xl font-semibold text-center">School ERP Login</h1>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <div>
-          <label className="block text-sm mb-1">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden px-4">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#312e81,_transparent_55%)]" />
+      <div className="relative w-full max-w-sm">
+        <div className="flex flex-col items-center mb-6">
+          <div className="bg-indigo-600 rounded-2xl p-3 shadow-lg shadow-indigo-900/40 mb-3">
+            <GraduationCap className="w-7 h-7 text-white" />
+          </div>
+          <h1 className="text-xl font-semibold text-white">School ERP</h1>
+          <p className="text-sm text-slate-400">Sign in to your school&apos;s dashboard</p>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white rounded py-2 disabled:opacity-50"
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-xl p-7 space-y-4"
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          {error && (
+            <div className="flex items-start gap-2 bg-rose-50 text-rose-700 text-sm rounded-lg px-3 py-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+          <div>
+            <Label>Email</Label>
+            <Input
+              type="email"
+              required
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@school.edu"
+            />
+          </div>
+          <div>
+            <Label>Password</Label>
+            <Input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="********"
+            />
+          </div>
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+        <p className="text-center text-xs text-slate-500 mt-5">
+          Self-hosted on your school&apos;s own server.
+        </p>
+      </div>
     </div>
   );
 }

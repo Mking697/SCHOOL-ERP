@@ -2,6 +2,8 @@ import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import PaymentPanel from "./payment-panel";
+import { Badge, statusTone } from "@/components/ui/badge";
+import { GraduationCap } from "lucide-react";
 
 export const instant = false;
 
@@ -31,91 +33,109 @@ export default async function InvoiceDetailPage({
   const balance = Number(invoice.totalAmount) - totalPaid;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6 mb-4 print:shadow-none">
-          <div className="flex justify-between items-start mb-4">
+    <div className="min-h-screen bg-slate-100 py-10 print:bg-white print:p-0">
+      <div className="max-w-2xl mx-auto px-4 print:px-0">
+        <div className="bg-white rounded-2xl shadow-xl print:shadow-none border border-slate-200 overflow-hidden mb-4">
+          <div className="bg-gradient-to-r from-indigo-700 to-indigo-900 text-white px-8 py-6 flex items-start justify-between">
             <div>
-              <p className="font-bold text-lg">{school?.name}</p>
-              <p className="text-sm text-gray-500">Fee Invoice / Receipt</p>
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-5 h-5" />
+                <p className="font-bold text-lg">{school?.name}</p>
+              </div>
+              <p className="text-sm text-indigo-200 mt-1">Fee Invoice / Receipt</p>
+              <p className="text-xs text-indigo-300 mt-2 font-mono">#{invoice.id.slice(-10).toUpperCase()}</p>
             </div>
-            <span
-              className={`text-sm font-semibold ${
-                invoice.status === "PAID"
-                  ? "text-green-700"
-                  : invoice.status === "PARTIAL"
-                  ? "text-yellow-700"
-                  : "text-red-600"
-              }`}
-            >
+            <Badge tone={statusTone(invoice.status)} className="bg-white/90 text-sm px-3 py-1">
               {invoice.status}
-            </span>
+            </Badge>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-            <p>
-              <span className="text-gray-500">Student:</span> {invoice.student.firstName}{" "}
-              {invoice.student.lastName}
-            </p>
-            <p>
-              <span className="text-gray-500">Admission No:</span> {invoice.student.admissionNo}
-            </p>
-            <p>
-              <span className="text-gray-500">Class:</span>{" "}
-              {invoice.student.section
-                ? `${invoice.student.section.classLevel.name} - ${invoice.student.section.name}`
-                : "-"}
-            </p>
-            <p>
-              <span className="text-gray-500">Due Date:</span>{" "}
-              {new Date(invoice.dueDate).toLocaleDateString()}
-            </p>
-          </div>
-
-          <table className="w-full text-sm mb-4">
-            <thead className="bg-gray-100 text-left">
-              <tr>
-                <th className="p-2">Description</th>
-                <th className="p-2 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoice.items.map((it) => (
-                <tr key={it.id} className="border-t">
-                  <td className="p-2">{it.description}</td>
-                  <td className="p-2 text-right">₹{Number(it.amount).toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t font-semibold">
-                <td className="p-2">Total</td>
-                <td className="p-2 text-right">₹{Number(invoice.totalAmount).toFixed(2)}</td>
-              </tr>
-              <tr>
-                <td className="p-2">Paid</td>
-                <td className="p-2 text-right">₹{totalPaid.toFixed(2)}</td>
-              </tr>
-              <tr className="font-semibold">
-                <td className="p-2">Balance</td>
-                <td className="p-2 text-right">₹{balance.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-
-          {invoice.payments.length > 0 && (
-            <div className="text-sm">
-              <p className="font-medium mb-1">Payment History</p>
-              <ul className="space-y-1">
-                {invoice.payments.map((p) => (
-                  <li key={p.id} className="text-gray-600">
-                    ₹{Number(p.amount).toFixed(2)} via {p.method} on{" "}
-                    {new Date(p.paidAt).toLocaleDateString()}
-                  </li>
-                ))}
-              </ul>
+          <div className="px-8 py-6">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm mb-6 bg-slate-50 rounded-lg p-4">
+              <p>
+                <span className="text-slate-400">Student</span>
+                <span className="block font-medium text-slate-900">
+                  {invoice.student.firstName} {invoice.student.lastName}
+                </span>
+              </p>
+              <p>
+                <span className="text-slate-400">Admission No.</span>
+                <span className="block font-medium text-slate-900">{invoice.student.admissionNo}</span>
+              </p>
+              <p>
+                <span className="text-slate-400">Class</span>
+                <span className="block font-medium text-slate-900">
+                  {invoice.student.section
+                    ? `${invoice.student.section.classLevel.name} - ${invoice.student.section.name}`
+                    : "-"}
+                </span>
+              </p>
+              <p>
+                <span className="text-slate-400">Due Date</span>
+                <span className="block font-medium text-slate-900">
+                  {new Date(invoice.dueDate).toLocaleDateString()}
+                </span>
+              </p>
             </div>
-          )}
+
+            <table className="w-full text-sm mb-6 border border-slate-200 rounded-lg overflow-hidden">
+              <thead className="bg-slate-800 text-white">
+                <tr>
+                  <th className="p-2.5 text-left font-medium">Description</th>
+                  <th className="p-2.5 text-right font-medium">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoice.items.map((it, i) => (
+                  <tr key={it.id} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                    <td className="p-2.5 border-t border-slate-100">{it.description}</td>
+                    <td className="p-2.5 text-right border-t border-slate-100">
+                      Rs {Number(it.amount).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-slate-100">
+                  <td className="p-2.5 font-medium border-t border-slate-200">Total</td>
+                  <td className="p-2.5 text-right font-medium border-t border-slate-200">
+                    Rs {Number(invoice.totalAmount).toFixed(2)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="p-2.5 text-emerald-700 border-t border-slate-200">Paid</td>
+                  <td className="p-2.5 text-right text-emerald-700 border-t border-slate-200">
+                    Rs {totalPaid.toFixed(2)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div className="flex items-center justify-between bg-indigo-50 rounded-lg px-5 py-3 mb-2">
+              <p className="text-sm font-medium text-indigo-900">Balance Due</p>
+              <p className="text-2xl font-bold text-indigo-700">Rs {balance.toFixed(2)}</p>
+            </div>
+
+            {invoice.payments.length > 0 && (
+              <div className="text-sm mt-6">
+                <p className="font-medium text-slate-700 mb-2">Payment History</p>
+                <ul className="space-y-2">
+                  {invoice.payments.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between text-slate-600 bg-slate-50 rounded-lg px-3 py-2"
+                    >
+                      <span>
+                        {p.method.replace("_", " ")} &middot;{" "}
+                        {new Date(p.paidAt).toLocaleDateString()}
+                      </span>
+                      <span className="font-medium text-slate-800">Rs {Number(p.amount).toFixed(2)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
         <PaymentPanel invoiceId={invoice.id} balance={balance} status={invoice.status} />

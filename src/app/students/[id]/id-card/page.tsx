@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import PrintButton from "./print-button";
+import { GraduationCap } from "lucide-react";
 
 export const instant = false;
 
@@ -24,38 +25,67 @@ export default async function StudentIdCardPage({
 
   if (!student) notFound();
 
+  const className = student.section
+    ? `${student.section.classLevel.name} - ${student.section.name}`
+    : "-";
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8 print:bg-white print:p-0">
-      <div className="max-w-sm mx-auto">
-        <div className="mb-4 print:hidden">
+    <div className="min-h-screen bg-slate-100 py-10 print:bg-white print:p-0">
+      <div className="max-w-xs mx-auto">
+        <div className="mb-5 print:hidden flex justify-center">
           <PrintButton />
         </div>
 
-        <div className="bg-white border-2 border-gray-800 rounded-lg p-4 shadow print:shadow-none">
-          <div className="text-center border-b pb-2 mb-2">
-            <p className="font-bold text-lg">{school?.name || "School Name"}</p>
-            <p className="text-xs text-gray-500">Student ID Card</p>
+        {/* ID card -- CR80 credit-card proportions */}
+        <div className="bg-white rounded-2xl shadow-xl print:shadow-none overflow-hidden border border-slate-200">
+          <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-4 py-3 text-white">
+            <div className="flex items-center gap-1.5">
+              <GraduationCap className="w-4 h-4 shrink-0" />
+              <p className="font-bold text-[13px] leading-tight truncate">
+                {school?.name || "School Name"}
+              </p>
+            </div>
+            <p className="text-[9px] text-indigo-200 tracking-widest uppercase mt-0.5">
+              Student Identity Card
+            </p>
           </div>
 
-          <div className="flex gap-4">
-            <div className="w-20 h-24 bg-gray-200 border flex items-center justify-center text-xs text-gray-400 shrink-0">
+          <div className="p-4 flex gap-3">
+            <div className="w-16 h-20 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[9px] text-slate-400 shrink-0">
               Photo
             </div>
-            <div className="text-sm space-y-1">
-              <p className="font-semibold">
+            <div className="min-w-0 pt-0.5">
+              <p className="font-bold text-sm text-slate-900 leading-tight truncate">
                 {student.firstName} {student.lastName}
               </p>
-              <p>Adm No: {student.admissionNo}</p>
-              <p>
-                Class:{" "}
-                {student.section
-                  ? `${student.section.classLevel.name} - ${student.section.name}`
-                  : "-"}
-              </p>
-              <p>DOB: {student.dob ? new Date(student.dob).toLocaleDateString() : "-"}</p>
-              <p>Guardian: {student.guardianName || "-"}</p>
-              <p>Phone: {student.guardianPhone || "-"}</p>
+              <p className="text-[10px] text-slate-500 mt-1">Adm No: {student.admissionNo}</p>
+              <p className="text-[10px] text-slate-500">Class: {className}</p>
             </div>
+          </div>
+
+          <div className="px-4 pb-3 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px]">
+            <p className="text-slate-400">
+              DOB
+              <span className="block text-slate-700 font-medium">
+                {student.dob ? new Date(student.dob).toLocaleDateString() : "-"}
+              </span>
+            </p>
+            <p className="text-slate-400">
+              Guardian
+              <span className="block text-slate-700 font-medium truncate">
+                {student.guardianName || "-"}
+              </span>
+            </p>
+            <p className="text-slate-400 col-span-2">
+              Phone <span className="text-slate-700 font-medium">{student.guardianPhone || "-"}</span>
+            </p>
+          </div>
+
+          <div className="border-t border-dashed border-slate-200 px-4 py-2 flex items-center justify-between">
+            <div className="font-mono text-[9px] tracking-[3px] text-slate-400">
+              ||{student.admissionNo}||
+            </div>
+            <p className="text-[8px] text-slate-400">Valid for current session</p>
           </div>
         </div>
       </div>
