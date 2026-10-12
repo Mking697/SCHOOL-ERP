@@ -14,17 +14,31 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [studentCount, schoolCount] = await Promise.all([
+  const [studentCount, schoolCount, school] = await Promise.all([
     prisma.student.count(),
     prisma.school.count(),
+    prisma.school.findFirst({ include: { license: true } }),
   ]);
+
+  const license = school?.license;
+  const isExpired = license?.expiresAt ? new Date(license.expiresAt) < new Date() : false;
+  const isLicensed = license?.isActive && !isExpired;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <h1 className="text-2xl font-semibold mb-2">Dashboard</h1>
-      <p className="text-gray-600 mb-6">
+      <p className="text-gray-600 mb-2">
         Logged in as {session.email} ({session.role})
       </p>
+      {!isLicensed && (
+        <a
+          href="/license"
+          className="block bg-yellow-100 border border-yellow-400 text-yellow-800 rounded px-4 py-2 text-sm mb-4 max-w-md"
+        >
+          {license ? "License expired ya inactive hai." : "Koi license activate nahi hai."}{" "}
+          Activate karne ke liye yahan click karo &rarr;
+        </a>
+      )}
       <div className="flex gap-3 mb-6 text-sm">
         <a href="/students" className="bg-white rounded shadow px-4 py-2">
           Students
@@ -85,6 +99,9 @@ export default async function DashboardPage() {
         </a>
         <a href="/analytics" className="bg-white rounded shadow px-4 py-2">
           Analytics
+        </a>
+        <a href="/license" className="bg-white rounded shadow px-4 py-2">
+          License
         </a>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-md">
