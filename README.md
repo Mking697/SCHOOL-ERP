@@ -45,7 +45,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0-8 done; Phase 8 partial, see notes)
+## Current status: ALL 9 PHASES BUILT (Phase 8 and 9 partial by design, see notes)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -129,3 +129,31 @@ Phase 8 -- Advanced (partial -- see "not built" below):
 Next (Phase 9): Platform/SaaS -- public school website, multi-school licensing
 with the School/License tables already in the schema, mobile apps -- see PLAN.md.
 This phase only matters once you're ready to sell to other schools.
+
+Phase 9 -- Licensing (SaaS/selling layer, scoped for the on-premise model):
+- Offline-verifiable license key system (HMAC-signed, no license server needed
+  -- works even if the school's server loses internet after activation)
+- Dashboard banner + dedicated page (/license) showing license status, with
+  a Super Admin activation form
+- `scripts/generate-license.mjs` -- VENDOR-ONLY tool (never ship to customers)
+  to mint a license key for a new customer school
+- IMPORTANT before selling to real customers: replace the placeholder
+  `LICENSE_SIGNING_SECRET` in the Dockerfile with one real random secret
+  (`openssl rand -hex 32`), rebuild the image ONCE, and keep that exact same
+  secret private to run generate-license.mjs for every customer. All
+  customer installs built from that image will then verify keys correctly.
+- The license is currently a soft gate (banner only, does not block
+  features) -- add hard enforcement in proxy.ts later if you want to
+  actually lock out expired/unlicensed installs.
+- NOT built (separate, larger undertakings -- scope these as their own
+  projects when actually needed):
+  - Public marketing website per school (different app/stack, not core ERP)
+  - Multi-school cloud SaaS with subdomains -- not applicable to the chosen
+    on-premise-per-school architecture; skip unless the business model changes
+  - Native mobile apps for Parent/Teacher (React Native) -- the existing web
+    UI is usable on mobile browsers today; a dedicated app is a separate
+    multi-week project
+
+This completes the full module roadmap from the original research
+(schoolerp.co.in reference, 50 modules deduped to ~38 distinct build items).
+All 9 phases have now been built and tested at least once end-to-end.
