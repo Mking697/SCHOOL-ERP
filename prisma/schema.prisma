@@ -63,6 +63,7 @@ model ClassLevel {
   id        String    @id @default(cuid())
   name      String // e.g. "Class 10"
   sections  Section[]
+  feeStructures FeeStructure[]
   createdAt DateTime  @default(now())
 }
 
@@ -113,6 +114,7 @@ model Student {
   updatedAt     DateTime  @updatedAt
 
   attendance Attendance[]
+  invoices   Invoice[]
 }
 
 model Enquiry {
@@ -172,4 +174,59 @@ model Holiday {
   createdAt   DateTime @default(now())
 
   @@unique([date])
+}
+
+model FeeHead {
+  id          String          @id @default(cuid())
+  name        String          @unique // e.g. "Tuition Fee", "Transport Fee"
+  createdAt   DateTime        @default(now())
+  structures  FeeStructure[]
+}
+
+model FeeStructure {
+  id           String     @id @default(cuid())
+  classLevel   ClassLevel @relation(fields: [classLevelId], references: [id], onDelete: Cascade)
+  classLevelId String
+  feeHead      FeeHead    @relation(fields: [feeHeadId], references: [id], onDelete: Cascade)
+  feeHeadId    String
+  amount       Decimal    @db.Decimal(10, 2)
+  frequency    String     @default("TERM") // ONE_TIME | MONTHLY | TERM | ANNUAL
+  createdAt    DateTime   @default(now())
+
+  @@unique([classLevelId, feeHeadId, frequency])
+}
+
+model Invoice {
+  id           String    @id @default(cuid())
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String
+  title        String
+  totalAmount  Decimal   @db.Decimal(10, 2)
+  dueDate      DateTime
+  status       String    @default("PENDING") // PENDING | PARTIAL | PAID | OVERDUE | CANCELLED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  items    InvoiceItem[]
+  payments Payment[]
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  description String
+  amount      Decimal @db.Decimal(10, 2)
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  invoice           Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId         String
+  amount            Decimal  @db.Decimal(10, 2)
+  method            String // CASH | BANK_TRANSFER | CHEQUE | ONLINE
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  recordedBy        String?
+  paidAt            DateTime @default(now())
 }
