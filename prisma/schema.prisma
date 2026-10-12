@@ -1,0 +1,124 @@
+// School ERP — Phase 0/1 schema
+// On-premise single-tenant per install (each school = its own DB instance),
+// but we keep a School row as the one-tenant settings/profile record, and a
+// License table as a stub for future multi-school licensing (Phase 9).
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  SCHOOL_ADMIN
+  TEACHER
+  ACCOUNTANT
+  PARENT
+  STUDENT
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  phone     String?
+  email     String?
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  license License?
+}
+
+model License {
+  id          String   @id @default(cuid())
+  school      School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId    String   @unique
+  licenseKey  String   @unique
+  plan        String   @default("standard")
+  activatedAt DateTime @default(now())
+  expiresAt   DateTime?
+  isActive    Boolean  @default(true)
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  teacher Teacher?
+  parent  Parent?
+}
+
+model ClassLevel {
+  id        String    @id @default(cuid())
+  name      String // e.g. "Class 10"
+  sections  Section[]
+  createdAt DateTime  @default(now())
+}
+
+model Section {
+  id        String      @id @default(cuid())
+  name      String // e.g. "A"
+  classLevel   ClassLevel @relation(fields: [classLevelId], references: [id], onDelete: Cascade)
+  classLevelId String
+  students  Student[]
+
+  @@unique([classLevelId, name])
+}
+
+model Teacher {
+  id      String @id @default(cuid())
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String @unique
+  phone   String?
+}
+
+model Parent {
+  id       String    @id @default(cuid())
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String    @unique
+  phone    String?
+  students Student[]
+}
+
+model Student {
+  id            String    @id @default(cuid())
+  admissionNo   String    @unique
+  firstName     String
+  lastName      String
+  dob           DateTime?
+  gender        String?
+  section       Section?  @relation(fields: [sectionId], references: [id])
+  sectionId     String?
+  parent        Parent?   @relation(fields: [parentId], references: [id])
+  parentId      String?
+  photoUrl      String?
+  isActive      Boolean   @default(true)
+  admittedAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  attendance Attendance[]
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId String
+  date      DateTime
+  status    String // PRESENT | ABSENT | LATE | HALF_DAY
+  markedBy  String?
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, date])
+}

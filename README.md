@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# School ERP
 
-## Getting Started
+On-premise, self-hosted School Management ERP. Each school installs this on
+its own Windows server — the installer sets up the database automatically,
+no manual DB/server configuration needed.
 
-First, run the development server:
+## For school IT staff: how to install
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install Docker Desktop (if not already): https://www.docker.com/products/docker-desktop/
+2. Copy this whole folder to the server.
+3. Right-click `install.ps1` -> Run with PowerShell (or open PowerShell here and
+   run `./install.ps1`).
+4. Answer the questions it asks (school name, admin login, port).
+5. Open `http://<server-ip>:<port>` in a browser and log in.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+That's it -- the database, tables, and your admin account are created
+automatically. Nothing to configure by hand.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## To update later
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
 
-## Learn More
+## For developers
 
-To learn more about Next.js, take a look at the following resources:
+- Stack: Next.js 16 (App Router) + TypeScript + Prisma 7 + PostgreSQL + Tailwind.
+- Local dev: copy `.env.example` to `.env`, point `DATABASE_URL` at a local
+  Postgres, then:
+  ```
+  npm install
+  npx prisma migrate dev
+  npx prisma db seed
+  npm run dev
+  ```
+- Prisma Client is generated to `src/generated/prisma` (not `node_modules`) --
+  Prisma 7 requirement. Run `npx prisma generate` after pulling schema changes.
+- Auth middleware lives in `src/proxy.ts` (Next.js 16 renamed `middleware.ts`
+  to `proxy.ts`).
+- See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Current status (Phase 0 -- Foundation)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Done:
+- Next.js + TS + Tailwind + Prisma scaffold
+- Docker Compose self-host stack (app + Postgres + auto-migrate/seed)
+- install.ps1 / update.ps1 for Windows
+- Basic auth (login, session cookie, route protection) + Super Admin seed
+- Core schema: School, License (stub), User/Role, ClassLevel, Section,
+  Teacher, Parent, Student, Attendance
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next (Phase 1): Student Information System CRUD, Admissions, Enquiry,
+Student ID card generation -- see PLAN.md.
