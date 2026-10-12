@@ -35,10 +35,17 @@ export default async function AppsPage() {
     {
       icon: Smartphone,
       title: "Parent & Student App",
-      subtitle: "Attendance, Fees, Homework, Report Cards",
+      subtitle: "13 Modules",
       description:
         "Login with your child's Admission No + Password. Works as an installable app on any phone (Add to Home Screen) -- no app store needed.",
-      features: ["Attendance %", "Fee payment (online)", "Homework & Notices", "Exam report cards"],
+      features: [
+        "Attendance, Timetable, Homework",
+        "Fees & Online Payment",
+        "Exams & Report Cards",
+        "My Bus (Live GPS)",
+        "Library, Events, Notices",
+        "Behavior & Achievements",
+      ],
       action: { label: "Open Parent & Student Portal", href: "/portal/login" },
       status: "live",
       color: "emerald",
@@ -46,10 +53,15 @@ export default async function AppsPage() {
     {
       icon: LayoutDashboard,
       title: "Staff & Admin App",
-      subtitle: "Full School Management Dashboard",
+      subtitle: "16+ Modules",
       description:
         "For teachers, accountants and school admins. Also installable as an app on desktop or phone -- the same login works everywhere.",
-      features: ["Students, Classes, Exams", "Fees & Accounting", "Attendance & Behavior", "Analytics Dashboard"],
+      features: [
+        "Students, Classes, Exams, Timetable",
+        "Fees & Accounting",
+        "Attendance, Behavior, Analytics",
+        "Transport, Library, Inventory, HR",
+      ],
       action: { label: "Open Staff & Admin Login", href: "/login" },
       status: "live",
       color: "indigo",
@@ -68,12 +80,12 @@ export default async function AppsPage() {
     {
       icon: Truck,
       title: "Driver App",
-      subtitle: "Live GPS tracking for Transport",
+      subtitle: "Live GPS tracking",
       description:
-        "A simple app for bus/van drivers to share live location so parents can track their child's bus. Planned for the Transport module.",
-      features: ["Live location sharing", "Route & trip logs", "Driver login"],
-      action: null,
-      status: "soon",
+        "For bus/van drivers to share live location during a trip so parents can track their child's bus in real time, right from the driver's own phone browser.",
+      features: ["Live location sharing (GPS)", "Route & stop list", "Vehicle Number + Password login"],
+      action: { label: "Open Driver App", href: "/driver/login" },
+      status: "live",
       color: "amber",
     },
     {

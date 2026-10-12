@@ -379,6 +379,15 @@ model TransportRoute {
   driverPhone   String?
   createdAt     DateTime @default(now())
 
+  // Driver App login -- separate from staff/portal auth, same pattern as
+  // the student portal: Vehicle Number + Password, activated by an admin.
+  driverPasswordHash String?
+
+  // Live GPS -- updated by the Driver App while a trip is in progress.
+  currentLat        Float?
+  currentLng        Float?
+  locationUpdatedAt DateTime?
+
   stops    Stop[]
   students Student[]
 }

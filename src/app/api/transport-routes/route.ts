@@ -7,7 +7,12 @@ export async function GET() {
     include: { stops: { orderBy: { order: "asc" } }, students: true },
     orderBy: { name: "asc" },
   });
-  return NextResponse.json(routes);
+  // Never send the password hash to the client -- expose only a boolean.
+  const safe = routes.map(({ driverPasswordHash, ...r }) => ({
+    ...r,
+    hasDriverLogin: !!driverPasswordHash,
+  }));
+  return NextResponse.json(safe);
 }
 
 export async function POST(req: NextRequest) {

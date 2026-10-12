@@ -2,7 +2,23 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Home, CalendarCheck, Wallet, BookOpenCheck, GraduationCap, Megaphone, LayoutGrid } from "lucide-react";
+import {
+  LogOut,
+  Home,
+  CalendarCheck,
+  Wallet,
+  BookOpenCheck,
+  GraduationCap,
+  Megaphone,
+  LayoutGrid,
+  CalendarClock,
+  CalendarDays,
+  Library,
+  Bus,
+  Trophy,
+  User,
+  MoreHorizontal,
+} from "lucide-react";
 import { BrandMark } from "@/components/ui/brand-mark";
 
 const navItems = [
@@ -12,6 +28,22 @@ const navItems = [
   { href: "/portal/homework", label: "Homework", icon: BookOpenCheck },
   { href: "/portal/exams", label: "Exams", icon: GraduationCap },
   { href: "/portal/notices", label: "Notices", icon: Megaphone },
+  { href: "/portal/timetable", label: "Timetable", icon: CalendarClock },
+  { href: "/portal/events", label: "Events", icon: CalendarDays },
+  { href: "/portal/library", label: "Library", icon: Library },
+  { href: "/portal/transport", label: "My Bus", icon: Bus },
+  { href: "/portal/behavior", label: "Behavior", icon: Trophy },
+  { href: "/portal/profile", label: "Profile", icon: User },
+];
+
+// Mobile bottom tab bar keeps only the 5 most-used items + "More" to avoid
+// a 13-item squeeze; the full list above is used for the desktop top nav.
+const mobileNavItems = [
+  { href: "/portal", label: "Home", icon: Home },
+  { href: "/portal/attendance", label: "Attendance", icon: CalendarCheck },
+  { href: "/portal/fees", label: "Fees", icon: Wallet },
+  { href: "/portal/homework", label: "Homework", icon: BookOpenCheck },
+  { href: "/portal/more", label: "More", icon: MoreHorizontal },
 ];
 
 export default function PortalChrome({
@@ -60,7 +92,7 @@ export default function PortalChrome({
           </button>
         </div>
         <div className="flex items-center justify-between px-4">
-        <nav className="hidden sm:flex items-center gap-1 pb-2">
+        <nav className="hidden sm:flex items-center gap-1 pb-2 overflow-x-auto">
           {navItems.map((item) => {
             const active = pathname === item.href;
             const Icon = item.icon;
@@ -68,7 +100,7 @@ export default function PortalChrome({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
                   active ? "bg-white/15 text-white font-medium" : "text-emerald-200 hover:text-white hover:bg-white/10"
                 }`}
               >
@@ -80,7 +112,7 @@ export default function PortalChrome({
         </nav>
         <a
           href="/apps"
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 mb-2 rounded-lg text-xs text-emerald-200 hover:text-white hover:bg-white/10"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 mb-2 rounded-lg text-xs text-emerald-200 hover:text-white hover:bg-white/10 shrink-0"
         >
           <LayoutGrid className="w-3.5 h-3.5" />
           All Apps
@@ -90,9 +122,9 @@ export default function PortalChrome({
 
       <main className="flex-1 p-4 pb-20 sm:pb-6 max-w-3xl w-full mx-auto">{children}</main>
 
-      {/* Mobile bottom tab bar */}
+      {/* Mobile bottom tab bar -- 5 most-used items + More (full list lives at /portal/more) */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex items-center justify-around h-16 z-30">
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
           return (

@@ -214,14 +214,43 @@ Phase 11 -- Student/Parent Portal (DONE, this change):
   binary asset files needed) so the whole app is installable as a PWA
   ("Add to Home Screen") from mobile browsers.
 
+Phase 11b -- Driver App, 6-app Apps page, Portal expanded to 13 modules
+(DONE, this change) -- matches the user's reference 6-app ecosystem
+(Parent & Student App 13 modules, Staff & Admin App 16+ modules, Driver
+App Live GPS, Biometric Agent .exe, School Portal web dashboard, Super
+Admin Panel for unlimited schools):
+- `/apps` -- public page (no login needed) listing all 6 apps with real
+  status: the 3 that exist today link straight to their working login;
+  the 2 that don't (Biometric Agent, Super Admin/Vendor Panel) are marked
+  "Coming Soon" with a disabled button instead of a fake link.
+- **Driver App** (`/driver/login`, new): separate auth world again
+  (`TransportRoute.driverPasswordHash`, own session cookie), login is
+  Vehicle Number + Password, activated per-route by an admin from the
+  Transport page. The driver's dashboard has a single Start/Stop button
+  that uses the browser's Geolocation `watchPosition` API (throttled to
+  once per 10s) and POSTs to `/api/driver/location`, which updates
+  `TransportRoute.currentLat/currentLng/locationUpdatedAt`, scoped so a
+  driver can only ever update their OWN route.
+- Transport page (staff) now shows live location + minutes-ago per route,
+  and an "Activate Driver App" / "Reset Driver Password" action.
+- Parent/Student Portal grew from 6 to 13 modules: added My Bus (shows
+  the live location on an embedded OpenStreetMap iframe -- no API key
+  needed), Timetable, Events, My Books (library), Behavior &
+  Achievements, and Profile (+ link to the real ID card). Desktop nav
+  shows all 12 links (horizontal scroll); the mobile bottom tab bar keeps
+  only the 5 most-used + a "More" grid page for the rest, to avoid a
+  13-item squeeze on a phone screen.
+- Still intentionally NOT built: Biometric Attendance Agent (needs real
+  ZKTeco-style hardware to build and test against -- flagged honestly,
+  not stubbed as "done") and the Super Admin / Vendor Panel (needs the
+  separate multi-tenant billing server architecture, see Phase 12 below).
+
 Still planned (see conversation/PLAN.md for full detail):
 - Phase 12: Central Vendor/Billing Server (separate deployable app) --
   Developer/vendor login, per-school subscription tracking, Razorpay
   Subscriptions (Monthly/Quarterly/Half-yearly/Yearly), hard-block
-  enforcement when a subscription lapses.
-- Phase 13: Driver App (PWA) -- live GPS tracking for the Transport module.
-- Phase 14: Staff/Admin PWA manifest + an in-app "Apps" page listing all
-  installable apps with download/install links.
+  enforcement when a subscription lapses, and the Super Admin / Vendor
+  Panel from the 6-app ecosystem.
 - Explicitly NOT building a native biometric hardware agent (ZKTeco-style
   .exe) without real hardware to test against -- flagged to the user as an
   honest limitation, not silently skipped.
