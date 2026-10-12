@@ -56,6 +56,9 @@ export default async function DashboardPage() {
         <a href="/exams" className="bg-white rounded shadow px-4 py-2">
           Exams
         </a>
+        <a href="/staff" className="bg-white rounded shadow px-4 py-2">
+          Staff / HR
+        </a>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-md">
         <div className="bg-white rounded-lg shadow p-4">

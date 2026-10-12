@@ -287,3 +287,44 @@ model Mark {
 
   @@unique([examSubjectId, studentId])
 }
+
+model Staff {
+  id           String   @id @default(cuid())
+  name         String
+  designation  String // e.g. "Teacher", "Accountant", "Librarian", "Admin"
+  department   String?
+  phone        String?
+  email        String?
+  joiningDate  DateTime @default(now())
+  salary       Decimal? @db.Decimal(10, 2)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leaveRequests   LeaveRequest[]
+  workAssignments WorkAssignment[]
+}
+
+model LeaveRequest {
+  id         String    @id @default(cuid())
+  staff      Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId    String
+  fromDate   DateTime
+  toDate     DateTime
+  reason     String
+  status     String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  appliedAt  DateTime  @default(now())
+  decidedBy  String?
+  decidedAt  DateTime?
+}
+
+model WorkAssignment {
+  id          String    @id @default(cuid())
+  staff       Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId     String
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      String    @default("PENDING") // PENDING | IN_PROGRESS | DONE
+  createdAt   DateTime  @default(now())
+}
