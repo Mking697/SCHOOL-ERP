@@ -150,7 +150,7 @@ export default function AttendancePage() {
                           variant={s.status === st ? "primary" : "secondary"}
                           onClick={() => setStatus(s.id, st)}
                         >
-                          {st}
+                          {st.replace("_", " ")}
                         </Button>
                       ))}
                     </div>

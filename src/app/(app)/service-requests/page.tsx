@@ -64,7 +64,7 @@ export default function ServiceRequestsPage() {
   return (
     <div>
       <PageHeader
-        title="Service Requests -- Parents & Staff"
+        title="Service Requests"
         description="Track and resolve service requests raised by parents and staff."
       />
 

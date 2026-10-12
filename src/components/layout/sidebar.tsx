@@ -9,6 +9,14 @@ import { navGroups } from "./nav-config";
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
+  // Pick the single longest-matching href across ALL nav items so a parent
+  // route (e.g. /students) doesn't stay highlighted alongside a more
+  // specific child route (e.g. /students/new) that also starts with it.
+  const allHrefs = navGroups.flatMap((g) => g.items.map((i) => i.href));
+  const activeHref = allHrefs
+    .filter((href) => pathname === href || pathname.startsWith(href + "/"))
+    .sort((a, b) => b.length - a.length)[0];
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-5 h-16 border-b border-slate-800">
@@ -26,9 +34,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             </p>
             <div className="space-y-0.5">
               {group.items.map((item) => {
-                const active =
-                  pathname === item.href ||
-                  (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
+                const active = item.href === activeHref;
                 const Icon = item.icon;
                 return (
                   <Link
