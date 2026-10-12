@@ -6,9 +6,6 @@ RUN npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
-# prisma generate only needs DATABASE_URL to be resolvable, not reachable —
-# real connection happens later at runtime via the compose .env file.
-ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

@@ -32,6 +32,9 @@ $adminPasswordPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
 $appPort = Read-Host "App kis port pe chalni chahiye (default 3000)"
 if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = "3000" }
 
+$razorpayKeyId = Read-Host "Razorpay Key ID (optional, online fee payment ke liye -- khali chhod sakte ho abhi)"
+$razorpaySecret = Read-Host "Razorpay Key Secret (optional)"
+
 function New-RandomSecret {
     param([int]$Length = 32)
     $bytes = New-Object byte[] $Length
@@ -43,8 +46,17 @@ $dbPassword = New-RandomSecret 24
 $jwtSecret  = New-RandomSecret 48
 
 # 3. Write .env
+# NOTE: no single DATABASE_URL here on purpose -- some Windows endpoint
+# security tools (seen with Avast on this project) silently redact
+# "scheme://user:pass@host" shaped text to "***" when written to disk. The
+# app builds the Postgres connection string in memory from these separate
+# pieces instead (see prisma.config.ts / src/lib/db.ts).
 $envContent = @"
-DATABASE_URL=postgresql://school_erp:$dbPassword@db:5432/school_erp?schema=public
+PGHOST=db
+PGPORT=5432
+PGUSER=school_erp
+PGPASSWORD=$dbPassword
+PGDATABASE=school_erp
 JWT_SECRET=$jwtSecret
 SEED_SCHOOL_NAME=$schoolName
 SEED_ADMIN_NAME=$adminName
@@ -54,11 +66,23 @@ POSTGRES_USER=school_erp
 POSTGRES_PASSWORD=$dbPassword
 POSTGRES_DB=school_erp
 APP_PORT=$appPort
+RAZORPAY_KEY_ID=$razorpayKeyId
+RAZORPAY_KEY_SECRET=$razorpaySecret
 "@
 
 $envPath = Join-Path $PSScriptRoot ".env"
 Set-Content -Path $envPath -Value $envContent -Encoding UTF8
 Write-Host "Config save ho gayi: $envPath" -ForegroundColor Green
+
+# Sanity check: verify the password actually landed on disk unredacted.
+# If an AV/DLP tool on this machine rewrites secret-shaped text, catch it
+# here instead of failing confusingly later inside the container.
+$writtenContent = Get-Content -Path $envPath -Raw
+if ($writtenContent -notmatch [regex]::Escape($dbPassword)) {
+    Write-Host "WARNING: DB password .env mein sahi se save nahi hui (antivirus/DLP ne block kiya ho sakta hai)." -ForegroundColor Red
+    Write-Host "Avast ya koi aur security software ki 'file shredder' / sensitive-data protection exclude karo is folder ke liye, phir dobara install.ps1 chalao." -ForegroundColor Red
+    exit 1
+}
 
 # 4. Build & start
 Write-Host "Docker images build ho rahi hain, pehli baar thoda time lagega..." -ForegroundColor Yellow

@@ -3,7 +3,16 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+function buildConnectionString(): string {
+  const host = process.env.PGHOST || "localhost";
+  const port = process.env.PGPORT || "5432";
+  const user = process.env.PGUSER || "school_erp";
+  const password = process.env.PGPASSWORD || "";
+  const database = process.env.PGDATABASE || "school_erp";
+  return "postgresql://" + user + ":" + password + "@" + host + ":" + port + "/" + database + "?schema=public";
+}
+
+const adapter = new PrismaPg({ connectionString: buildConnectionString() });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
