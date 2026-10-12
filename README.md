@@ -45,7 +45,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 4 done)
+## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5 done)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -84,3 +84,10 @@ Phase 4 -- Academics & Exams:
   subject and overall percentage (/exams/[id]/report-card/[studentId])
 
 Next (Phase 5): Staff/HR (Employee, HR, Leave, Work Allocation) -- see PLAN.md.
+
+Phase 5 -- Staff/HR:
+- Staff/Employee records with designation, department, salary (/staff)
+- Leave request apply + admin approve/reject per staff member (/staff/[id])
+- Work/Duty allocation with status tracking PENDING/IN_PROGRESS/DONE (/staff/[id])
+
+Next (Phase 6): Communication & Engagement (Notices, Alerts, Events, PTM) -- see PLAN.md.
