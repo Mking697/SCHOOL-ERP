@@ -328,3 +328,32 @@ model WorkAssignment {
   status      String    @default("PENDING") // PENDING | IN_PROGRESS | DONE
   createdAt   DateTime  @default(now())
 }
+
+model Notice {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  audience  String   @default("ALL") // ALL | TEACHERS | PARENTS | STUDENTS
+  createdBy String?
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  eventDate   DateTime
+  location    String?
+  createdAt   DateTime @default(now())
+}
+
+model ServiceRequest {
+  id              String    @id @default(cuid())
+  raisedByName    String
+  raisedByContact String
+  subject         String
+  description     String?
+  status          String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED
+  createdAt       DateTime  @default(now())
+  resolvedAt      DateTime?
+}
