@@ -23,21 +23,29 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
 ## For developers
 
 - Stack: Next.js 16 (App Router) + TypeScript + Prisma 7 + PostgreSQL + Tailwind.
-- Local dev: copy `.env.example` to `.env`, point `DATABASE_URL` at a local
-  Postgres, then:
+- Local dev: copy `.env.example` to `.env`, point PGHOST/PGUSER/PGPASSWORD/PGDATABASE
+  at a local Postgres, then:
   ```
   npm install
   npx prisma migrate dev
   npx prisma db seed
   npm run dev
   ```
+- IMPORTANT: there is no single `DATABASE_URL` stored in any file. Some Windows
+  endpoint security tools (seen with Avast on this project) silently redact
+  `scheme://user:pass@host` shaped text to `***` when written to disk, which
+  would corrupt the DB password. Instead the connection string is built in
+  memory at runtime from separate `PGHOST`/`PGUSER`/`PGPASSWORD`/`PGPORT`/
+  `PGDATABASE` env vars (see `prisma.config.ts` and `src/lib/db.ts`).
+  `install.ps1` verifies the password actually landed on disk before
+  proceeding and fails loudly if it got redacted.
 - Prisma Client is generated to `src/generated/prisma` (not `node_modules`) --
   Prisma 7 requirement. Run `npx prisma generate` after pulling schema changes.
 - Auth middleware lives in `src/proxy.ts` (Next.js 16 renamed `middleware.ts`
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 + Phase 1 + Phase 2 done)
+## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 done)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -60,4 +68,12 @@ Phase 2 -- Attendance, Timetable, Holidays:
 - Subjects + weekly timetable grid per section (/timetable)
 - Holidays & School Planner (/holidays)
 
-Next (Phase 3): Fee Management + Razorpay online payments -- see PLAN.md.
+Phase 3 -- Fee Management:
+- Fee Heads + per-class Fee Structure setup (/fees/structure)
+- Bulk invoice generation for a whole section (/fees/generate)
+- Invoice list with status filters (/fees)
+- Invoice detail / printable receipt, cash/bank/cheque payment recording,
+  and a Razorpay "Pay Online" button scaffold (/fees/[id]) -- needs real
+  RAZORPAY_KEY_ID/SECRET to actually test the online payment flow
+
+Next (Phase 4): Academics & Exams (homework, exams, report cards) -- see PLAN.md.
