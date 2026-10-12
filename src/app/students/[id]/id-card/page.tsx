@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import PrintButton from "./print-button";
-import { GraduationCap } from "lucide-react";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 export const instant = false;
 
@@ -40,7 +40,9 @@ export default async function StudentIdCardPage({
         <div className="bg-white rounded-2xl shadow-xl print:shadow-none overflow-hidden border border-slate-200">
           <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-4 py-3 text-white">
             <div className="flex items-center gap-1.5">
-              <GraduationCap className="w-4 h-4 shrink-0" />
+              <div className="w-4 h-4 shrink-0 bg-white/10 rounded-sm flex items-center justify-center overflow-hidden">
+                <BrandMark logoUrl={school?.logoUrl} schoolName={school?.name} className="w-4 h-4" />
+              </div>
               <p className="font-bold text-[13px] leading-tight truncate">
                 {school?.name || "School Name"}
               </p>

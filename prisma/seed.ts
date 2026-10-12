@@ -16,7 +16,17 @@ const adapter = new PrismaPg({ connectionString: buildConnectionString() });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const schoolName = process.env.SEED_SCHOOL_NAME || "My School";
+  // Seeding is opt-in: only runs if SEED_SCHOOL_NAME is explicitly set
+  // (useful for dev/CI setups that want a ready-made school+admin without
+  // clicking through the UI). A real install intentionally does NOT set
+  // this -- the first request to the app shows the /setup wizard instead,
+  // where the School Admin picks the name, logo and their own login.
+  if (!process.env.SEED_SCHOOL_NAME) {
+    console.log("Seed skipped: SEED_SCHOOL_NAME not set -- use the web /setup wizard instead");
+    return;
+  }
+
+  const schoolName = process.env.SEED_SCHOOL_NAME;
   const adminEmail = process.env.SEED_ADMIN_EMAIL || "admin@school.local";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || "ChangeMe123!";
   const adminName = process.env.SEED_ADMIN_NAME || "Super Admin";

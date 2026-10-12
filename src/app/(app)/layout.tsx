@@ -17,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+      <Sidebar schoolName={school?.name || "School ERP"} logoUrl={school?.logoUrl || null} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar
           schoolName={school?.name || "School ERP"}

@@ -3,7 +3,7 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { gradeFor } from "@/lib/grading";
 import PrintButton from "./print-button";
-import { GraduationCap } from "lucide-react";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 export const instant = false;
 
@@ -57,7 +57,8 @@ export default async function ReportCardPage({
   const overallPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
   const overallGrade = gradeFor(overallPercentage);
   const hasFail = rows.some((r) => r.grade === "F");
-  const result = hasFail ? "FAIL" : "PASS";
+  const hasIncomplete = rows.some((r) => r.obtained === null);
+  const result = hasIncomplete ? "INCOMPLETE" : hasFail ? "FAIL" : "PASS";
 
   const gradeColor: Record<string, string> = {
     "A+": "text-emerald-700 bg-emerald-50",
@@ -80,7 +81,9 @@ export default async function ReportCardPage({
           {/* Letterhead */}
           <div className="bg-gradient-to-r from-indigo-700 to-indigo-900 text-white px-8 py-6 text-center">
             <div className="flex items-center justify-center gap-2">
-              <GraduationCap className="w-6 h-6" />
+              <div className="w-6 h-6 shrink-0 flex items-center justify-center overflow-hidden">
+                <BrandMark logoUrl={school?.logoUrl} schoolName={school?.name} className="w-6 h-6" />
+              </div>
               <p className="font-bold text-xl">{school?.name || "School Name"}</p>
             </div>
             <p className="text-sm text-indigo-200 mt-1 uppercase tracking-widest">
@@ -113,7 +116,11 @@ export default async function ReportCardPage({
                 <span className="text-slate-400">Result</span>
                 <span
                   className={`inline-block mt-0.5 text-xs font-bold px-2 py-0.5 rounded-full ${
-                    result === "PASS" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                    result === "PASS"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : result === "INCOMPLETE"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-rose-100 text-rose-700"
                   }`}
                 >
                   {result}

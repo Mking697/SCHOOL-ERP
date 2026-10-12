@@ -1,11 +1,13 @@
 <#
-  School ERP — Windows Installer
+  School ERP -- Windows Installer
   Run this on the school's Windows server. It will:
     1. Check Docker Desktop is installed and running (tells you if not).
-    2. Ask a few setup questions (school name, admin login, port).
+    2. Ask only for the port to run on (defaults to 3000).
     3. Generate a .env file with safe random secrets.
     4. Build and start everything with Docker Compose (app + Postgres DB).
-    5. The database and Super Admin login are created automatically on first run.
+    5. The database is created automatically. Open the app in your browser
+       and a one-time Setup Wizard will ask for your school name, logo and
+       admin login -- no further terminal steps needed.
 #>
 
 $ErrorActionPreference = "Stop"
@@ -21,14 +23,8 @@ try {
     exit 1
 }
 
-# 2. Ask setup questions
-$schoolName   = Read-Host "School ka naam (e.g. Green Valley Public School)"
-$adminName    = Read-Host "Admin ka naam"
-$adminEmail   = Read-Host "Admin login email"
-$adminPassword = Read-Host "Admin password set karo (strong)" -AsSecureString
-$adminPasswordPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-    [Runtime.InteropServices.Marshal]::SecureStringToBSTR($adminPassword)
-)
+# 2. Ask only the port -- everything else (school, admin, branding) is set
+# up via the web wizard on first launch.
 $appPort = Read-Host "App kis port pe chalni chahiye (default 3000)"
 if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = "3000" }
 
@@ -50,7 +46,8 @@ $jwtSecret  = New-RandomSecret 48
 # security tools (seen with Avast on this project) silently redact
 # "scheme://user:pass@host" shaped text to "***" when written to disk. The
 # app builds the Postgres connection string in memory from these separate
-# pieces instead (see prisma.config.ts / src/lib/db.ts).
+# pieces instead (see prisma.config.ts / src/lib/db.ts). SEED_* vars are
+# intentionally NOT set -- the web /setup wizard handles first-run setup.
 $envContent = @"
 PGHOST=db
 PGPORT=5432
@@ -58,10 +55,6 @@ PGUSER=school_erp
 PGPASSWORD=$dbPassword
 PGDATABASE=school_erp
 JWT_SECRET=$jwtSecret
-SEED_SCHOOL_NAME=$schoolName
-SEED_ADMIN_NAME=$adminName
-SEED_ADMIN_EMAIL=$adminEmail
-SEED_ADMIN_PASSWORD=$adminPasswordPlain
 POSTGRES_USER=school_erp
 POSTGRES_PASSWORD=$dbPassword
 POSTGRES_DB=school_erp
@@ -95,9 +88,9 @@ try {
 
 Write-Host ""
 Write-Host "=== Install complete ===" -ForegroundColor Cyan
-Write-Host "App yahan khulegi: http://localhost:$appPort"
-Write-Host "Login: $adminEmail"
-Write-Host "(password wahi hai jo abhi set kiya)"
+Write-Host "Ab apne browser mein kholo: http://localhost:$appPort"
+Write-Host "Pehli baar khulne par ek Setup Wizard aayega -- wahan apna School"
+Write-Host "Name, Logo, aur Admin login (email/password) set karo. Bas."
 Write-Host ""
 Write-Host "Status check karne ke liye: docker compose ps"
 Write-Host "Logs dekhne ke liye: docker compose logs -f app"

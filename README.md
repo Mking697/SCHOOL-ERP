@@ -10,8 +10,11 @@ no manual DB/server configuration needed.
 2. Copy this whole folder to the server.
 3. Right-click `install.ps1` -> Run with PowerShell (or open PowerShell here and
    run `./install.ps1`).
-4. Answer the questions it asks (school name, admin login, port).
-5. Open `http://<server-ip>:<port>` in a browser and log in.
+4. Answer the one question it asks (which port to run on -- default 3000)
+   and optionally your Razorpay keys (can be added later).
+5. Open `http://<server-ip>:<port>` in a browser. A one-time **Setup Wizard**
+   appears -- enter your School Name, upload a logo (optional), and create
+   your admin login. That's your account from then on.
 
 That's it -- the database, tables, and your admin account are created
 automatically. Nothing to configure by hand.
@@ -157,3 +160,43 @@ Phase 9 -- Licensing (SaaS/selling layer, scoped for the on-premise model):
 This completes the full module roadmap from the original research
 (schoolerp.co.in reference, 50 modules deduped to ~38 distinct build items).
 All 9 phases have now been built and tested at least once end-to-end.
+
+## Multi-school commercial pivot (Phase 10+)
+
+The user now intends to sell this to multiple schools with a hosted
+subscription model. In progress / planned:
+
+Phase 10 -- Setup Wizard + Branding (DONE, this change):
+- `/setup` -- one-time first-run wizard (School Name, Logo upload, Admin
+  account). Guards itself: once a `School` row exists it permanently
+  redirects to `/login` and can never run again on that install.
+- `/` and `/login` now check whether a School exists and route to `/setup`
+  first on a truly fresh install -- no more manual `SEED_*` env vars needed
+  for real installs (`install.ps1` no longer asks for school/admin details).
+- `prisma/seed.ts` is now opt-in (only runs if `SEED_SCHOOL_NAME` is set) --
+  useful for dev/CI, never for a real customer install.
+- Logo (stored as a base64 data URL in `School.logoUrl`, no file storage
+  needed) now renders via a shared `<BrandMark>` component in: sidebar,
+  login page, student ID card, exam report card, and fee invoice/receipt.
+- Next.js 16 "Cache Components" gotcha hit during this phase: `export const
+  instant = false` alone does NOT disable production caching (it's a
+  dev-only navigation-validation flag) -- pages reading uncached data (like
+  a plain `prisma` call with no `cookies()`/`headers()`) need `await
+  connection()` from `next/server` too, or they get served from a stale
+  build-time cache. Both are required together: `connection()` forces
+  per-request dynamic rendering, `instant = false` allows the build to
+  accept a fully-blocking (non-prerenderable) route.
+
+Still planned (see conversation/PLAN.md for full detail):
+- Phase 11: Student/Parent Portal -- separate login via Student ID +
+  password, read-only dashboards, PWA installable.
+- Phase 12: Central Vendor/Billing Server (separate deployable app) --
+  Developer/vendor login, per-school subscription tracking, Razorpay
+  Subscriptions (Monthly/Quarterly/Half-yearly/Yearly), hard-block
+  enforcement when a subscription lapses.
+- Phase 13: Driver App (PWA) -- live GPS tracking for the Transport module.
+- Phase 14: Staff/Admin PWA manifest + an in-app "Apps" page listing all
+  installable apps with download/install links.
+- Explicitly NOT building a native biometric hardware agent (ZKTeco-style
+  .exe) without real hardware to test against -- flagged to the user as an
+  honest limitation, not silently skipped.

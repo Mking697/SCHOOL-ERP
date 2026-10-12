@@ -3,7 +3,7 @@ import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import PaymentPanel from "./payment-panel";
 import { Badge, statusTone } from "@/components/ui/badge";
-import { GraduationCap } from "lucide-react";
+import { BrandMark } from "@/components/ui/brand-mark";
 
 export const instant = false;
 
@@ -39,7 +39,9 @@ export default async function InvoiceDetailPage({
           <div className="bg-gradient-to-r from-indigo-700 to-indigo-900 text-white px-8 py-6 flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5" />
+                <div className="w-5 h-5 shrink-0 flex items-center justify-center overflow-hidden">
+                  <BrandMark logoUrl={school?.logoUrl} schoolName={school?.name} className="w-5 h-5" />
+                </div>
                 <p className="font-bold text-lg">{school?.name}</p>
               </div>
               <p className="text-sm text-indigo-200 mt-1">Fee Invoice / Receipt</p>
