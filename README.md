@@ -45,7 +45,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0-7 done)
+## Current status (Phase 0-8 done; Phase 8 partial, see notes)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -113,3 +113,19 @@ Phase 7 -- Facilities & Operations:
 
 Next (Phase 8): Advanced features (Behavior tracking, E-learning, U-Dise reporting,
 Analytics dashboards, Biometric integration) -- see PLAN.md.
+
+Phase 8 -- Advanced (partial -- see "not built" below):
+- Student Behavior/Discipline records (positive + negative), shown on student
+  detail page
+- Achievements/Co-curricular tracking, shown on student detail page
+- E-Learning: Virtual Classroom scheduling with Zoom/Meet links (/virtual-classes)
+- Analytics Dashboard: attendance %, fee collection %, avg exam score,
+  student/staff counts (/analytics)
+- NOT built (need external specs/hardware, deliberately skipped):
+  - U-Dise government compliance reporting (needs official govt data format spec)
+  - Biometric device integration (needs actual hardware SDK, e.g. ZKTeco, to test against)
+  - Scheduled Services module (scope was never clearly defined by competitor refs)
+
+Next (Phase 9): Platform/SaaS -- public school website, multi-school licensing
+with the School/License tables already in the schema, mobile apps -- see PLAN.md.
+This phase only matters once you're ready to sell to other schools.
