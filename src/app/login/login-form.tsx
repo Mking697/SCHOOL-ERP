@@ -90,7 +90,10 @@ export default function LoginForm({
           </Button>
         </form>
         <p className="text-center text-xs text-slate-500 mt-5">
-          Self-hosted on your school&apos;s own server.
+          Self-hosted on your school&apos;s own server. &middot;{" "}
+          <a href="/apps" className="underline hover:text-slate-300">
+            All Apps &amp; Downloads
+          </a>
         </p>
       </div>
     </div>

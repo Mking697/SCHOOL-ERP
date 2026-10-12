@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth";
 import { verifyPortalSession, PORTAL_SESSION_COOKIE } from "@/lib/portal-auth";
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login", "/setup", "/api/setup"];
+const PUBLIC_PATHS = ["/login", "/api/auth/login", "/setup", "/api/setup", "/apps"];
 const PORTAL_PUBLIC_PATHS = ["/portal/login", "/api/portal/auth/login"];
 
 export function proxy(request: NextRequest) {

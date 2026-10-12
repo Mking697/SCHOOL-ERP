@@ -86,7 +86,10 @@ export default function PortalLoginForm({
           </Button>
         </form>
         <p className="text-center text-xs text-emerald-300/70 mt-5">
-          Login details school office se milenge.
+          Login details school office se milenge. &middot;{" "}
+          <a href="/apps" className="underline hover:text-emerald-200">
+            All Apps &amp; Downloads
+          </a>
         </p>
       </div>
     </div>

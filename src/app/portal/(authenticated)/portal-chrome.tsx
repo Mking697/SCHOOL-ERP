@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Home, CalendarCheck, Wallet, BookOpenCheck, GraduationCap, Megaphone } from "lucide-react";
+import { LogOut, Home, CalendarCheck, Wallet, BookOpenCheck, GraduationCap, Megaphone, LayoutGrid } from "lucide-react";
 import { BrandMark } from "@/components/ui/brand-mark";
 
 const navItems = [
@@ -59,7 +59,8 @@ export default function PortalChrome({
             <LogOut className="w-4 h-4" />
           </button>
         </div>
-        <nav className="hidden sm:flex items-center gap-1 px-4 pb-2">
+        <div className="flex items-center justify-between px-4">
+        <nav className="hidden sm:flex items-center gap-1 pb-2">
           {navItems.map((item) => {
             const active = pathname === item.href;
             const Icon = item.icon;
@@ -77,6 +78,14 @@ export default function PortalChrome({
             );
           })}
         </nav>
+        <a
+          href="/apps"
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 mb-2 rounded-lg text-xs text-emerald-200 hover:text-white hover:bg-white/10"
+        >
+          <LayoutGrid className="w-3.5 h-3.5" />
+          All Apps
+        </a>
+        </div>
       </header>
 
       <main className="flex-1 p-4 pb-20 sm:pb-6 max-w-3xl w-full mx-auto">{children}</main>

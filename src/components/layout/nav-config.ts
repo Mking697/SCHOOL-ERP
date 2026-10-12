@@ -23,6 +23,7 @@ import {
   Boxes,
   UserCheck2,
   BadgeCheck,
+  LayoutGrid,
   type LucideIcon,
 } from "lucide-react";
 
@@ -83,6 +84,9 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "System",
-    items: [{ label: "License", href: "/license", icon: BadgeCheck }],
+    items: [
+      { label: "License", href: "/license", icon: BadgeCheck },
+      { label: "Apps & Downloads", href: "/apps", icon: LayoutGrid },
+    ],
   },
 ];
