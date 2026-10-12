@@ -102,6 +102,9 @@ model Student {
   sectionId     String?
   parent        Parent?   @relation(fields: [parentId], references: [id])
   parentId      String?
+  guardianName  String?
+  guardianPhone String?
+  address       String?
   photoUrl      String?
   isActive      Boolean   @default(true)
   admittedAt    DateTime  @default(now())
@@ -109,6 +112,19 @@ model Student {
   updatedAt     DateTime  @updatedAt
 
   attendance Attendance[]
+}
+
+model Enquiry {
+  id           String   @id @default(cuid())
+  studentName  String
+  guardianName String?
+  phone        String
+  email        String?
+  classApplied String?
+  status       String   @default("NEW") // NEW | FOLLOW_UP | ADMITTED | CLOSED
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Attendance {

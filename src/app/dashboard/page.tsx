@@ -25,6 +25,20 @@ export default async function DashboardPage() {
       <p className="text-gray-600 mb-6">
         Logged in as {session.email} ({session.role})
       </p>
+      <div className="flex gap-3 mb-6 text-sm">
+        <a href="/students" className="bg-white rounded shadow px-4 py-2">
+          Students
+        </a>
+        <a href="/students/new" className="bg-white rounded shadow px-4 py-2">
+          New Admission
+        </a>
+        <a href="/classes" className="bg-white rounded shadow px-4 py-2">
+          Classes &amp; Sections
+        </a>
+        <a href="/enquiries" className="bg-white rounded shadow px-4 py-2">
+          Enquiries
+        </a>
+      </div>
       <div className="grid grid-cols-2 gap-4 max-w-md">
         <div className="bg-white rounded-lg shadow p-4">
           <p className="text-sm text-gray-500">Schools</p>
