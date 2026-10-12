@@ -37,7 +37,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 + Phase 1 done)
+## Current status (Phase 0 + Phase 1 + Phase 2 done)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -55,4 +55,9 @@ Phase 1 -- Student Information System:
 - Printable Student ID Card (/students/[id]/id-card)
 - Admission Enquiries tracking (/enquiries) with status (NEW/FOLLOW_UP/ADMITTED/CLOSED)
 
-Next (Phase 2): Attendance + Timetable + Holidays -- see PLAN.md.
+Phase 2 -- Attendance, Timetable, Holidays:
+- Daily attendance marking per section/date (/attendance) with bulk "mark all present"
+- Subjects + weekly timetable grid per section (/timetable)
+- Holidays & School Planner (/holidays)
+
+Next (Phase 3): Fee Management + Razorpay online payments -- see PLAN.md.
