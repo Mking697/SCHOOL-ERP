@@ -45,7 +45,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5 done)
+## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5 + Phase 6 done)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -91,3 +91,14 @@ Phase 5 -- Staff/HR:
 - Work/Duty allocation with status tracking PENDING/IN_PROGRESS/DONE (/staff/[id])
 
 Next (Phase 6): Communication & Engagement (Notices, Alerts, Events, PTM) -- see PLAN.md.
+
+Phase 6 -- Communication & Engagement:
+- Notices/Announcements with audience targeting ALL/TEACHERS/PARENTS/STUDENTS (/notices)
+- School Events calendar (/events)
+- Service Requests from parents/staff with OPEN/IN_PROGRESS/RESOLVED tracking
+  (/service-requests)
+- NOT yet built: actual WhatsApp/SMS delivery of notices (needs WhatsApp
+  Cloud API or SMS gateway credentials) -- in-app only for now, see Phase 9
+
+Next (Phase 7): Facilities & Operations (Transport, Library, Inventory, Medical,
+Visitor Management) -- see PLAN.md.
