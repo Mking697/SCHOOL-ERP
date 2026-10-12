@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
+import { checkSubscription } from "@/lib/subscription";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import SubscriptionGate from "@/components/subscription-gate";
 
 export const instant = false;
 
@@ -14,6 +16,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const license = school?.license;
   const isExpired = license?.expiresAt ? new Date(license.expiresAt) < new Date() : false;
   const licensed = Boolean(license?.isActive && !isExpired);
+
+  // Hard block: only if a central Vendor/Billing Server is configured
+  // AND it explicitly confirms the subscription is inactive. Schools not
+  // wired up to central billing (VENDOR_SERVER_URL/SCHOOL_API_KEY unset)
+  // are entirely unaffected by this -- they keep using the offline
+  // license system above.
+  const subscription = await checkSubscription();
+  if (subscription && !subscription.active) {
+    return <SubscriptionGate schoolName={school?.name || "Your School"} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50">

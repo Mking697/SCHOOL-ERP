@@ -246,11 +246,32 @@ Admin Panel for unlimited schools):
   separate multi-tenant billing server architecture, see Phase 12 below).
 
 Still planned (see conversation/PLAN.md for full detail):
-- Phase 12: Central Vendor/Billing Server (separate deployable app) --
-  Developer/vendor login, per-school subscription tracking, Razorpay
-  Subscriptions (Monthly/Quarterly/Half-yearly/Yearly), hard-block
-  enforcement when a subscription lapses, and the Super Admin / Vendor
-  Panel from the 6-app ecosystem.
 - Explicitly NOT building a native biometric hardware agent (ZKTeco-style
   .exe) without real hardware to test against -- flagged to the user as an
   honest limitation, not silently skipped.
+
+Phase 12 -- Vendor/Billing Server, subscription enforcement (DONE, this
+change): see `../vendor-server/README.md` for the full separate app. In
+short -- a standalone Next.js app deployed once by the vendor, tracking
+subscription/billing for every customer school (never student data,
+which stays on each school's own on-prem install). This app side:
+- `src/lib/subscription.ts` -- entirely opt-in via `VENDOR_SERVER_URL` +
+  `SCHOOL_API_KEY` env vars (unset by default). Checks in with the
+  vendor server, cached 1h, fails OPEN (never locks a school out just
+  because the vendor server is briefly unreachable).
+- `(app)/layout.tsx` now hard-blocks with `<SubscriptionGate>` (every
+  page under the staff/admin area) the moment the vendor server
+  confirms the subscription inactive -- shows a plan selector + "Pay Now"
+  button, Razorpay checkout opens, on success the school unlocks on the
+  very next page load (cache explicitly invalidated on verify, not left
+  to expire on its own).
+- `/api/subscription/pay/order` and `/verify` proxy to the vendor server
+  -- `SCHOOL_API_KEY` and the vendor's Razorpay secret never reach the
+  browser on either side.
+- Verified end-to-end: a test school created on the vendor server,
+  backdated to expired, correctly showed the hard paywall in the school
+  app (confirmed visually in-browser); a simulated Razorpay payment
+  (manually-computed HMAC signature, matching what the real Razorpay
+  checkout would send) correctly extended the subscription and the
+  dashboard unlocked on the very next request with no manual refresh
+  delay; a tampered signature was correctly rejected.
