@@ -38,6 +38,15 @@ export default async function DashboardPage() {
         <a href="/enquiries" className="bg-white rounded shadow px-4 py-2">
           Enquiries
         </a>
+        <a href="/attendance" className="bg-white rounded shadow px-4 py-2">
+          Attendance
+        </a>
+        <a href="/timetable" className="bg-white rounded shadow px-4 py-2">
+          Timetable
+        </a>
+        <a href="/holidays" className="bg-white rounded shadow px-4 py-2">
+          Holidays
+        </a>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-md">
         <div className="bg-white rounded-lg shadow p-4">

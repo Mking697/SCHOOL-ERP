@@ -72,6 +72,7 @@ model Section {
   classLevel   ClassLevel @relation(fields: [classLevelId], references: [id], onDelete: Cascade)
   classLevelId String
   students  Student[]
+  timetable TimetableEntry[]
 
   @@unique([classLevelId, name])
 }
@@ -137,4 +138,38 @@ model Attendance {
   createdAt DateTime @default(now())
 
   @@unique([studentId, date])
+}
+
+model Subject {
+  id        String           @id @default(cuid())
+  name      String           @unique
+  code      String?
+  createdAt DateTime         @default(now())
+  timetable TimetableEntry[]
+}
+
+model TimetableEntry {
+  id           String   @id @default(cuid())
+  section      Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId    String
+  dayOfWeek    Int // 0=Sunday .. 6=Saturday
+  periodNumber Int
+  subject      Subject? @relation(fields: [subjectId], references: [id])
+  subjectId    String?
+  teacherName  String?
+  startTime    String? // "09:00"
+  endTime      String? // "09:45"
+  createdAt    DateTime @default(now())
+
+  @@unique([sectionId, dayOfWeek, periodNumber])
+}
+
+model Holiday {
+  id          String   @id @default(cuid())
+  date        DateTime
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@unique([date])
 }
