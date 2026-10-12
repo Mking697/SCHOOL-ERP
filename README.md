@@ -45,7 +45,7 @@ Run `./update.ps1` -- pulls/rebuilds and re-applies migrations automatically.
   to `proxy.ts`).
 - See `../PLAN.md` (one level up) for the full module roadmap and phases.
 
-## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 done)
+## Current status (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 4 done)
 
 Phase 0 -- Foundation:
 - Next.js + TS + Tailwind + Prisma scaffold
@@ -76,4 +76,11 @@ Phase 3 -- Fee Management:
   and a Razorpay "Pay Online" button scaffold (/fees/[id]) -- needs real
   RAZORPAY_KEY_ID/SECRET to actually test the online payment flow
 
-Next (Phase 4): Academics & Exams (homework, exams, report cards) -- see PLAN.md.
+Phase 4 -- Academics & Exams:
+- Homework/Assignment assignment per section+subject with due dates (/homework)
+- Exam creation with multiple subjects + max marks per class (/exams)
+- Per-subject marks entry grid for all students in a class (/exams/[id])
+- Printable Report Card with auto-calculated grade (A+/A/B+/B/C/D/F) per
+  subject and overall percentage (/exams/[id]/report-card/[studentId])
+
+Next (Phase 5): Staff/HR (Employee, HR, Leave, Work Allocation) -- see PLAN.md.
