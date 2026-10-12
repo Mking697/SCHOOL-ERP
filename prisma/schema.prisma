@@ -76,6 +76,7 @@ model Section {
   students  Student[]
   timetable TimetableEntry[]
   homework  Homework[]
+  virtualClasses VirtualClass[]
 
   @@unique([classLevelId, name])
 }
@@ -122,6 +123,8 @@ model Student {
   marks      Mark[]
   bookIssues BookIssue[]
   healthRecord HealthRecord?
+  behaviorRecords BehaviorRecord[]
+  achievements    Achievement[]
 }
 
 model Enquiry {
@@ -157,6 +160,7 @@ model Subject {
   timetable TimetableEntry[]
   homework  Homework[]
   examSubjects ExamSubject[]
+  virtualClasses VirtualClass[]
 }
 
 model TimetableEntry {
@@ -437,4 +441,38 @@ model Visitor {
   personToMeet  String?
   checkIn       DateTime  @default(now())
   checkOut      DateTime?
+}
+
+model BehaviorRecord {
+  id          String   @id @default(cuid())
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  type        String // POSITIVE | NEGATIVE
+  category    String?
+  description String
+  recordedBy  String?
+  createdAt   DateTime @default(now())
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  title       String
+  category    String? // Sports | Academics | Arts | Co-curricular
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model VirtualClass {
+  id          String   @id @default(cuid())
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId   String
+  title       String
+  meetingLink String
+  scheduledAt DateTime
+  createdAt   DateTime @default(now())
 }

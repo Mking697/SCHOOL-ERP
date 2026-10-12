@@ -80,6 +80,12 @@ export default async function DashboardPage() {
         <a href="/visitors" className="bg-white rounded shadow px-4 py-2">
           Visitors
         </a>
+        <a href="/virtual-classes" className="bg-white rounded shadow px-4 py-2">
+          Virtual Classroom
+        </a>
+        <a href="/analytics" className="bg-white rounded shadow px-4 py-2">
+          Analytics
+        </a>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-md">
         <div className="bg-white rounded-lg shadow p-4">

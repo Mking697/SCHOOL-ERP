@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
+import StudentExtras from "./student-extras";
 
 export const instant = false;
 
@@ -16,7 +17,11 @@ export default async function StudentDetailPage({
   const { id } = await params;
   const student = await prisma.student.findUnique({
     where: { id },
-    include: { section: { include: { classLevel: true } } },
+    include: {
+      section: { include: { classLevel: true } },
+      behaviorRecords: { orderBy: { createdAt: "desc" } },
+      achievements: { orderBy: { date: "desc" } },
+    },
   });
 
   if (!student) notFound();
@@ -86,6 +91,23 @@ export default async function StudentDetailPage({
           <p className="font-medium">{student.isActive ? "Active" : "Inactive"}</p>
         </div>
       </div>
+
+      <StudentExtras
+        studentId={student.id}
+        behaviorRecords={student.behaviorRecords.map((b) => ({
+          id: b.id,
+          type: b.type,
+          category: b.category ?? undefined,
+          description: b.description,
+          createdAt: b.createdAt.toISOString(),
+        }))}
+        achievements={student.achievements.map((a) => ({
+          id: a.id,
+          title: a.title,
+          category: a.category ?? undefined,
+          date: a.date.toISOString(),
+        }))}
+      />
     </div>
   );
 }
