@@ -64,6 +64,7 @@ model ClassLevel {
   name      String // e.g. "Class 10"
   sections  Section[]
   feeStructures FeeStructure[]
+  exams     Exam[]
   createdAt DateTime  @default(now())
 }
 
@@ -74,6 +75,7 @@ model Section {
   classLevelId String
   students  Student[]
   timetable TimetableEntry[]
+  homework  Homework[]
 
   @@unique([classLevelId, name])
 }
@@ -115,6 +117,7 @@ model Student {
 
   attendance Attendance[]
   invoices   Invoice[]
+  marks      Mark[]
 }
 
 model Enquiry {
@@ -148,6 +151,8 @@ model Subject {
   code      String?
   createdAt DateTime         @default(now())
   timetable TimetableEntry[]
+  homework  Homework[]
+  examSubjects ExamSubject[]
 }
 
 model TimetableEntry {
@@ -229,4 +234,56 @@ model Payment {
   razorpayPaymentId String?
   recordedBy        String?
   paidAt            DateTime @default(now())
+}
+
+model Homework {
+  id          String   @id @default(cuid())
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId   String
+  title       String
+  description String?
+  dueDate     DateTime
+  createdBy   String?
+  createdAt   DateTime @default(now())
+}
+
+model Exam {
+  id           String        @id @default(cuid())
+  title        String
+  classLevel   ClassLevel    @relation(fields: [classLevelId], references: [id], onDelete: Cascade)
+  classLevelId String
+  startDate    DateTime
+  endDate      DateTime
+  createdAt    DateTime      @default(now())
+
+  subjects ExamSubject[]
+}
+
+model ExamSubject {
+  id        String   @id @default(cuid())
+  exam      Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examId    String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId String
+  maxMarks  Int      @default(100)
+  examDate  DateTime?
+
+  marks Mark[]
+
+  @@unique([examId, subjectId])
+}
+
+model Mark {
+  id            String      @id @default(cuid())
+  examSubject   ExamSubject @relation(fields: [examSubjectId], references: [id], onDelete: Cascade)
+  examSubjectId String
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId     String
+  marksObtained Decimal     @db.Decimal(6, 2)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([examSubjectId, studentId])
 }
