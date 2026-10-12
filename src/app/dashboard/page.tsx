@@ -68,6 +68,18 @@ export default async function DashboardPage() {
         <a href="/service-requests" className="bg-white rounded shadow px-4 py-2">
           Service Requests
         </a>
+        <a href="/transport" className="bg-white rounded shadow px-4 py-2">
+          Transport
+        </a>
+        <a href="/library" className="bg-white rounded shadow px-4 py-2">
+          Library
+        </a>
+        <a href="/inventory" className="bg-white rounded shadow px-4 py-2">
+          Inventory
+        </a>
+        <a href="/visitors" className="bg-white rounded shadow px-4 py-2">
+          Visitors
+        </a>
       </div>
       <div className="grid grid-cols-2 gap-4 max-w-md">
         <div className="bg-white rounded-lg shadow p-4">

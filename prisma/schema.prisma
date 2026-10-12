@@ -106,6 +106,8 @@ model Student {
   sectionId     String?
   parent        Parent?   @relation(fields: [parentId], references: [id])
   parentId      String?
+  route         TransportRoute? @relation(fields: [routeId], references: [id])
+  routeId       String?
   guardianName  String?
   guardianPhone String?
   address       String?
@@ -118,6 +120,8 @@ model Student {
   attendance Attendance[]
   invoices   Invoice[]
   marks      Mark[]
+  bookIssues BookIssue[]
+  healthRecord HealthRecord?
 }
 
 model Enquiry {
@@ -356,4 +360,81 @@ model ServiceRequest {
   status          String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED
   createdAt       DateTime  @default(now())
   resolvedAt      DateTime?
+}
+
+model TransportRoute {
+  id            String   @id @default(cuid())
+  name          String
+  vehicleNumber String?
+  driverName    String?
+  driverPhone   String?
+  createdAt     DateTime @default(now())
+
+  stops    Stop[]
+  students Student[]
+}
+
+model Stop {
+  id      String         @id @default(cuid())
+  route   TransportRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  routeId String
+  name    String
+  order   Int            @default(0)
+}
+
+model Book {
+  id               String   @id @default(cuid())
+  title            String
+  author           String?
+  isbn             String?
+  totalCopies      Int      @default(1)
+  availableCopies  Int      @default(1)
+  createdAt        DateTime @default(now())
+
+  issues BookIssue[]
+}
+
+model BookIssue {
+  id         String    @id @default(cuid())
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId     String
+  student    Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  issueDate  DateTime  @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     String    @default("ISSUED") // ISSUED | RETURNED
+
+  @@index([studentId])
+}
+
+model InventoryItem {
+  id        String   @id @default(cuid())
+  name      String
+  category  String?
+  quantity  Int      @default(0)
+  unit      String?
+  location  String?
+  createdAt DateTime @default(now())
+}
+
+model HealthRecord {
+  id               String   @id @default(cuid())
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId        String   @unique
+  bloodGroup       String?
+  allergies        String?
+  conditions       String?
+  emergencyContact String?
+  updatedAt        DateTime @updatedAt
+}
+
+model Visitor {
+  id            String    @id @default(cuid())
+  name          String
+  phone         String
+  purpose       String
+  personToMeet  String?
+  checkIn       DateTime  @default(now())
+  checkOut      DateTime?
 }

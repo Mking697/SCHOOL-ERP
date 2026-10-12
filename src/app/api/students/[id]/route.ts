@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
   const { id } = await params;
   const body = await req.json();
-  const { firstName, lastName, dob, gender, sectionId, guardianName, guardianPhone, address, isActive } = body;
+  const { firstName, lastName, dob, gender, sectionId, guardianName, guardianPhone, address, isActive, routeId } = body;
 
   const student = await prisma.student.update({
     where: { id },
@@ -41,6 +41,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       guardianPhone,
       address,
       isActive,
+      routeId: routeId === "" ? null : routeId,
     },
   });
   return NextResponse.json(student);
