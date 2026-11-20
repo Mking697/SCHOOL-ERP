@@ -35,6 +35,7 @@ export async function grantStaffLoginAccess(
   if (!input.email) {
     throw new StaffLoginError(400, "Login access ke liye pehle staff ka email add karo");
   }
+  const email = input.email.trim().toLowerCase();
   const role: StaffLoginRole = isStaffLoginRole(input.role) ? input.role : "TEACHER";
   const passwordHash = await bcrypt.hash(password, 10);
 
@@ -46,12 +47,12 @@ export async function grantStaffLoginAccess(
     return { email: user.email, role: user.role as StaffLoginRole, created: false };
   }
 
-  const existing = await db.user.findUnique({ where: { email: input.email } });
+  const existing = await db.user.findUnique({ where: { email } });
   if (existing) {
     throw new StaffLoginError(409, "Ye email pehle se kisi aur login se juda hai");
   }
   const user = await db.user.create({
-    data: { name: input.name, email: input.email, passwordHash, role, isActive: true },
+    data: { name: input.name, email, passwordHash, role, isActive: true },
   });
   await db.staff.update({ where: { id: staffId }, data: { userId: user.id } });
   return { email: user.email, role: user.role as StaffLoginRole, created: true };

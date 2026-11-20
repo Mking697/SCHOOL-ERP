@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email aur password required hai" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email: String(email).trim().toLowerCase() } });
   if (!user || !user.isActive) {
     return NextResponse.json({ error: "Invalid login" }, { status: 401 });
   }
