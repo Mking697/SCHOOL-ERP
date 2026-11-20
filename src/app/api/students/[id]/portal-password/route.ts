@@ -9,7 +9,7 @@ import { getSession } from "@/lib/session";
 // parent/student directly, the same way a physical ID card is handed out.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session || !["SUPER_ADMIN", "SCHOOL_ADMIN"].includes(session.role)) {
+  if (!session || !["SUPER_ADMIN", "PRINCIPAL", "HR"].includes(session.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

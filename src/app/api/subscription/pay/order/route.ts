@@ -1,25 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { isVendorBillingConfigured } from "@/lib/subscription";
+import { forwardSubscriptionPayment } from "@/lib/subscription-payment-proxy";
 
-// Proxies to the vendor's Billing Server -- SCHOOL_API_KEY stays here on
-// the server, never sent to the browser. Only SUPER_ADMIN/SCHOOL_ADMIN
-// can trigger a renewal payment.
+// SCHOOL_API_KEY is added server-side, never accepted from browser input.
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || !["SUPER_ADMIN", "SCHOOL_ADMIN"].includes(session.role)) {
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!["SUPER_ADMIN", "PRINCIPAL", "SCHOOL_ADMIN"].includes(session.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   if (!isVendorBillingConfigured()) {
     return NextResponse.json({ error: "Vendor billing not configured on this install" }, { status: 400 });
   }
-
-  const { plan } = await req.json();
-  const res = await fetch(`${process.env.VENDOR_SERVER_URL}/api/public/pay/order`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ apiKey: process.env.SCHOOL_API_KEY, plan }),
+  const result = await forwardSubscriptionPayment(req, "order", {
+    vendorUrl: process.env.VENDOR_SERVER_URL!,
+    schoolKey: process.env.SCHOOL_API_KEY!,
   });
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
+  return NextResponse.json(result.body, { status: result.status });
 }

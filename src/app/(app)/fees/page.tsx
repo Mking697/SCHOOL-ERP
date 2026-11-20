@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge, statusTone } from "@/components/ui/badge";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 export const instant = false;
 
@@ -28,6 +30,26 @@ export default async function FeesPage({
     take: 200,
   });
 
+  const exportRows = invoices.map((inv) => {
+    const paid = inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+    return {
+      student: `${inv.student.firstName} ${inv.student.lastName}`,
+      title: inv.title,
+      total: Number(inv.totalAmount),
+      paid,
+      dueDate: new Date(inv.dueDate).toLocaleDateString(),
+      status: inv.status,
+    };
+  });
+  const columns: ExportColumn<(typeof exportRows)[number]>[] = [
+    { header: "Student", value: (r) => r.student },
+    { header: "Title", value: (r) => r.title },
+    { header: "Total Amount", value: (r) => r.total },
+    { header: "Paid Amount", value: (r) => r.paid },
+    { header: "Due Date", value: (r) => r.dueDate },
+    { header: "Status", value: (r) => r.status },
+  ];
+
   return (
     <>
       <PageHeader
@@ -35,6 +57,7 @@ export default async function FeesPage({
         description="Track and manage student fee invoices"
         actions={
           <>
+            <ExportButtons data={exportRows} columns={columns} filename="fee-invoices" sheetName="Fee Invoices" />
             <Link href="/fees/structure">
               <Button variant="secondary">
                 <Settings2 className="h-4 w-4" />

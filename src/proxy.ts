@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession, SESSION_COOKIE } from "@/lib/auth";
 import { verifyPortalSession, PORTAL_SESSION_COOKIE } from "@/lib/portal-auth";
 import { verifyDriverSession, DRIVER_SESSION_COOKIE } from "@/lib/driver-auth";
+import { isPathAllowedForRole } from "@/components/layout/nav-config";
 
 const PUBLIC_PATHS = ["/login", "/api/auth/login", "/setup", "/api/setup", "/apps"];
 const PORTAL_PUBLIC_PATHS = ["/portal/login", "/api/portal/auth/login"];
@@ -10,7 +11,15 @@ const DRIVER_PUBLIC_PATHS = ["/driver/login", "/api/driver/auth/login"];
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/_next") || pathname.startsWith("/favicon")) {
+  // Static/PWA assets must stay reachable without a session -- the browser
+  // fetches manifest.webmanifest and the icon route anonymously to decide
+  // whether the site is installable, before any login has happened.
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon") ||
+    pathname === "/manifest.webmanifest" ||
+    pathname.startsWith("/icon")
+  ) {
     return NextResponse.next();
   }
 
@@ -44,6 +53,28 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Report cards and invoice detail/payment pages are the pages BOTH a staff
+  // member and a parent/student legitimately open -- each lives outside
+  // /portal on purpose (so the staff layout doesn't wrap it) and checks
+  // either session itself. Accept EITHER a valid staff session or a valid
+  // portal session here, otherwise a parent/student gets redirected to the
+  // staff /login page before ever reaching the page's own dual-session
+  // check. Invoice detail is "/fees/<id>" exactly (not the static
+  // /fees/structure or /fees/generate admin sub-pages).
+  const isReportCard = pathname.startsWith("/exams/") && pathname.includes("/report-card/");
+  const feesIdMatch = pathname.match(/^\/fees\/([^/]+)$/);
+  const isInvoiceDetail = feesIdMatch && !["structure", "generate"].includes(feesIdMatch[1]);
+  if (isReportCard || isInvoiceDetail) {
+    const staffToken = request.cookies.get(SESSION_COOKIE)?.value;
+    const staffSession = staffToken ? verifySession(staffToken) : null;
+    const portalToken = request.cookies.get(PORTAL_SESSION_COOKIE)?.value;
+    const portalSession = portalToken ? verifyPortalSession(portalToken) : null;
+    if (!staffSession && !portalSession) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return NextResponse.next();
+  }
+
   if (PUBLIC_PATHS.includes(pathname)) {
     return NextResponse.next();
   }
@@ -54,6 +85,16 @@ export function proxy(request: NextRequest) {
   if (!session) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Role-based access control: a route's allowed roles come from the same
+  // nav-config used to build the sidebar, so a role that can't SEE a link
+  // also can't reach it directly by URL (API included).
+  if (!isPathAllowedForRole(pathname, session.role)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();

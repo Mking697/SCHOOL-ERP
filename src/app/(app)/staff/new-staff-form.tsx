@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
-import { Input, Label } from "@/components/ui/input";
+import { Input, Label, Select } from "@/components/ui/input";
 
 export default function NewStaffForm() {
   const router = useRouter();
@@ -17,6 +17,9 @@ export default function NewStaffForm() {
     email: "",
     salary: "",
   });
+  const [createLogin, setCreateLogin] = useState(false);
+  const [loginRole, setLoginRole] = useState("TEACHER");
+  const [loginPassword, setLoginPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -26,7 +29,10 @@ export default function NewStaffForm() {
     const res = await fetch("/api/staff", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        ...(createLogin ? { loginRole, loginPassword } : {}),
+      }),
     });
     if (!res.ok) {
       const d = await res.json();
@@ -34,6 +40,8 @@ export default function NewStaffForm() {
       return;
     }
     setForm({ name: "", designation: "", department: "", phone: "", email: "", salary: "" });
+    setCreateLogin(false);
+    setLoginPassword("");
     setOpen(false);
     router.refresh();
   }
@@ -102,6 +110,51 @@ export default function NewStaffForm() {
               onChange={(e) => setForm((f) => ({ ...f, salary: e.target.value }))}
             />
           </div>
+
+          <div className="border-t border-slate-100 pt-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={createLogin}
+                onChange={(e) => setCreateLogin(e.target.checked)}
+              />
+              Staff & Admin app login access bhi abhi grant karo
+            </label>
+            {createLogin && (
+              <div className="mt-3 space-y-3">
+                {!form.email && (
+                  <p className="text-xs text-amber-600">Login ke liye upar Email bharna zaroori hai.</p>
+                )}
+                <div>
+                  <Label>Login Role</Label>
+                  <Select value={loginRole} onChange={(e) => setLoginRole(e.target.value)} className="w-48">
+                    <option value="TEACHER">Teacher</option>
+                    <option value="ACCOUNTANT">Accountant</option>
+                    <option value="HR">HR</option>
+                    <option value="SCHOOL_ADMIN">School Admin</option>
+                    <option value="PRINCIPAL">Principal</option>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Login Password</Label>
+                  <Input
+                    type="text"
+                    required={createLogin}
+                    minLength={6}
+                    placeholder="min 6 characters"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="w-48"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">
+                  Staff apne phone par <span className="font-mono">/login</span> khol ke ye email/password se
+                  login kar sakega, aur &quot;Add to Home Screen&quot; karke app jaisa use kar sakta hai.
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2">
             <Button type="submit">Save</Button>
             <Button type="button" variant="secondary" onClick={() => setOpen(false)}>

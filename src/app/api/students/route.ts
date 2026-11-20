@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || !["SUPER_ADMIN", "SCHOOL_ADMIN"].includes(session.role)) {
+  if (!session || !["SUPER_ADMIN", "PRINCIPAL", "HR"].includes(session.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const body = await req.json();
@@ -46,6 +47,18 @@ export async function POST(req: NextRequest) {
   }
 
   const admissionNo = body.admissionNo || (await nextAdmissionNo());
+
+  // Portal login activates automatically at admission -- default password is
+  // the student's DOB as DDMMYYYY (matching the "no extra step" ask), same
+  // pattern as a physical school ID card: easy to hand over, and the parent
+  // can change it anytime from Profile. Only set when a DOB was given.
+  let portalPasswordHash: string | undefined;
+  let generatedPassword: string | null = null;
+  if (dob) {
+    const d = new Date(dob);
+    generatedPassword = `${String(d.getDate()).padStart(2, "0")}${String(d.getMonth() + 1).padStart(2, "0")}${d.getFullYear()}`;
+    portalPasswordHash = await bcrypt.hash(generatedPassword, 10);
+  }
 
   try {
     const student = await prisma.student.create({
@@ -59,9 +72,10 @@ export async function POST(req: NextRequest) {
         guardianName,
         guardianPhone,
         address,
+        portalPasswordHash,
       },
     });
-    return NextResponse.json(student, { status: 201 });
+    return NextResponse.json({ ...student, generatedPortalPassword: generatedPassword }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Admission number already exists" }, { status: 409 });
   }

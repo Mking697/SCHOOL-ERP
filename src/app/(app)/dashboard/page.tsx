@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { StatCard } from "@/components/ui/page-header";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { navGroups } from "@/components/layout/nav-config";
+import { navGroupsForRole } from "@/components/layout/nav-config";
+import TeacherLiveTimetable from "./teacher-live-timetable";
+import TeacherSummaryWidgets from "./teacher-summary-widgets";
 
 export const instant = false;
 
@@ -30,6 +32,7 @@ export default async function DashboardPage() {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const canSeeFinance = ["SUPER_ADMIN", "SCHOOL_ADMIN", "ACCOUNTANT"].includes(session.role);
 
   return (
     <div>
@@ -45,16 +48,21 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Total Students" value={studentCount} tone="indigo" />
         <StatCard label="Total Staff" value={staffCount} tone="sky" />
-        <StatCard
-          label="Pending Invoices"
-          value={pendingInvoices}
-          tone={pendingInvoices > 0 ? "amber" : "emerald"}
-        />
+        {canSeeFinance && (
+          <StatCard
+            label="Pending Invoices"
+            value={pendingInvoices}
+            tone={pendingInvoices > 0 ? "amber" : "emerald"}
+          />
+        )}
         <StatCard label="Present Today" value={todayPresentCount} tone="emerald" />
       </div>
 
+      {session.role === "TEACHER" && <TeacherSummaryWidgets />}
+      {session.role === "TEACHER" && <TeacherLiveTimetable />}
+
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {navGroups
+        {navGroupsForRole(session.role)
           .filter((g) => g.label !== "Overview")
           .map((group) => (
             <div key={group.label} className="bg-white rounded-xl border border-slate-200 shadow-sm">

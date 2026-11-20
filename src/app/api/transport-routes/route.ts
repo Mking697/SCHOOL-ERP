@@ -17,7 +17,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || !["SUPER_ADMIN", "SCHOOL_ADMIN"].includes(session.role)) {
+  if (!session || !["SUPER_ADMIN", "PRINCIPAL", "SCHOOL_ADMIN"].includes(session.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { name, vehicleNumber, driverName, driverPhone } = await req.json();

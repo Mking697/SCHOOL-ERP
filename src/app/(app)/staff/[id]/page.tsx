@@ -2,6 +2,8 @@ import { redirect, notFound } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import StaffActions from "./staff-actions";
+import StaffLoginAccessPanel from "./staff-login-access-panel";
+import PayrollPanel from "./payroll-panel";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 
@@ -21,6 +23,7 @@ export default async function StaffDetailPage({
     include: {
       leaveRequests: { orderBy: { appliedAt: "desc" } },
       workAssignments: { orderBy: { createdAt: "desc" } },
+      user: true,
     },
   });
 
@@ -53,6 +56,18 @@ export default async function StaffDetailPage({
           </div>
         </CardBody>
       </Card>
+
+      <StaffLoginAccessPanel
+        staffId={staff.id}
+        email={staff.email}
+        hasLoginAccess={!!staff.user}
+        role={staff.user?.role ?? null}
+      />
+
+      <PayrollPanel
+        staffId={staff.id}
+        canManage={["SUPER_ADMIN", "PRINCIPAL", "ACCOUNTANT"].includes(session.role)}
+      />
 
       <StaffActions
         staffId={staff.id}

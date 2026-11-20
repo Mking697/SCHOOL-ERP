@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 export const instant = false;
 
@@ -16,12 +18,32 @@ export default async function StaffPage() {
 
   const staff = await prisma.staff.findMany({ orderBy: { name: "asc" } });
 
+  const exportRows = staff.map((s) => ({
+    name: s.name,
+    designation: s.designation,
+    department: s.department || "-",
+    phone: s.phone || "-",
+    status: s.isActive ? "Active" : "Inactive",
+  }));
+  const columns: ExportColumn<(typeof exportRows)[number]>[] = [
+    { header: "Name", value: (r) => r.name },
+    { header: "Designation", value: (r) => r.designation },
+    { header: "Department", value: (r) => r.department },
+    { header: "Phone", value: (r) => r.phone },
+    { header: "Status", value: (r) => r.status },
+  ];
+
   return (
     <div>
       <PageHeader
         title="Staff / HR"
         description="Manage staff records, designations and contact details."
-        actions={<NewStaffForm />}
+        actions={
+          <>
+            <ExportButtons data={exportRows} columns={columns} filename="staff" sheetName="Staff" />
+            <NewStaffForm />
+          </>
+        }
       />
 
       <Card className="max-w-4xl overflow-hidden">

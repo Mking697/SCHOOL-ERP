@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 // Student/Parent portal has its OWN session type, completely separate from
 // staff/admin sessions (different cookie, different secret derivation,
@@ -27,6 +28,8 @@ export function verifyPortalSession(token: string): PortalSessionPayload | null 
 }
 
 export async function getPortalSession(): Promise<PortalSessionPayload | null> {
+  // JWT expiry must be verified at request time, not during prerender.
+  await connection();
   const cookieStore = await cookies();
   const token = cookieStore.get(PORTAL_SESSION_COOKIE)?.value;
   return token ? verifyPortalSession(token) : null;

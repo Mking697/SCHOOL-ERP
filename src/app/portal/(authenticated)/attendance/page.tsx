@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
 import { Badge, statusTone } from "@/components/ui/badge";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 export const instant = false;
 
@@ -15,9 +17,24 @@ export default async function PortalAttendancePage() {
     take: 90,
   });
 
+  const exportRows = records.map((r) => ({
+    date: new Date(r.date).toLocaleDateString(),
+    status: r.status.replace("_", " "),
+  }));
+  const columns: ExportColumn<(typeof exportRows)[number]>[] = [
+    { header: "Date", value: (r) => r.date },
+    { header: "Status", value: (r) => r.status },
+  ];
+
   return (
     <div>
-      <PageHeader title="Attendance History" description="Last 90 marked days" />
+      <PageHeader
+        title="Attendance History"
+        description="Last 90 marked days"
+        actions={
+          <ExportButtons data={exportRows} columns={columns} filename="my-attendance" sheetName="Attendance" />
+        }
+      />
       <Card>
         <Table>
           <Thead>

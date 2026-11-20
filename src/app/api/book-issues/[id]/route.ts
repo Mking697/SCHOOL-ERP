@@ -6,7 +6,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await getSession();
-  if (!session || !["SUPER_ADMIN", "SCHOOL_ADMIN"].includes(session.role)) {
+  if (!session || !["SUPER_ADMIN", "PRINCIPAL", "SCHOOL_ADMIN"].includes(session.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const { id } = await params;

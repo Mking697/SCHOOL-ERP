@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input, Select, Label } from "@/components/ui/input";
 import { Table, Thead, Th, Td, Tr } from "@/components/ui/table";
 import { CheckCircle2 } from "lucide-react";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 type ClassLevel = { id: string; name: string; sections: { id: string; name: string }[] };
 type StudentRow = {
@@ -58,6 +60,12 @@ export default function AttendancePage() {
   function markAll(status: string) {
     setStudents((rows) => rows.map((r) => ({ ...r, status })));
   }
+
+  const exportColumns: ExportColumn<StudentRow>[] = [
+    { header: "Admission No", value: (r) => r.admissionNo },
+    { header: "Name", value: (r) => `${r.firstName} ${r.lastName}` },
+    { header: "Status", value: (r) => r.status || "-" },
+  ];
 
   async function save() {
     setSaving(true);
@@ -119,6 +127,14 @@ export default function AttendancePage() {
             <CheckCircle2 className="w-4 h-4" />
             Mark All Present
           </Button>
+        )}
+        {students.length > 0 && (
+          <ExportButtons
+            data={students}
+            columns={exportColumns}
+            filename={`attendance-${date || "export"}`}
+            sheetName="Attendance"
+          />
         )}
       </div>
 

@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
 import { Plus, Search } from "lucide-react";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 export const instant = false;
 
@@ -37,18 +39,38 @@ export default async function StudentsPage({
     take: 100,
   });
 
+  const exportRows = students.map((s) => ({
+    admissionNo: s.admissionNo,
+    name: `${s.firstName} ${s.lastName}`,
+    class: s.section ? `${s.section.classLevel.name} - ${s.section.name}` : "-",
+    guardian: s.guardianName || "-",
+    guardianPhone: s.guardianPhone || "-",
+    status: s.isActive ? "Active" : "Inactive",
+  }));
+  const columns: ExportColumn<(typeof exportRows)[number]>[] = [
+    { header: "Admission No", value: (r) => r.admissionNo },
+    { header: "Name", value: (r) => r.name },
+    { header: "Class", value: (r) => r.class },
+    { header: "Guardian", value: (r) => r.guardian },
+    { header: "Guardian Phone", value: (r) => r.guardianPhone },
+    { header: "Status", value: (r) => r.status },
+  ];
+
   return (
     <div>
       <PageHeader
         title="Students"
         description="Manage student admissions and records"
         actions={
-          <Link href="/students/new">
-            <Button variant="primary">
-              <Plus className="w-4 h-4" />
-              New Admission
-            </Button>
-          </Link>
+          <>
+            <ExportButtons data={exportRows} columns={columns} filename="students" sheetName="Students" />
+            <Link href="/students/new">
+              <Button variant="primary">
+                <Plus className="w-4 h-4" />
+                New Admission
+              </Button>
+            </Link>
+          </>
         }
       />
 

@@ -7,6 +7,8 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 type Visitor = {
   id: string;
@@ -51,11 +53,23 @@ export default function VisitorsPage() {
     load();
   }
 
+  const exportColumns: ExportColumn<Visitor>[] = [
+    { header: "Name", value: (v) => v.name },
+    { header: "Phone", value: (v) => v.phone },
+    { header: "Purpose", value: (v) => v.purpose },
+    { header: "Person To Meet", value: (v) => v.personToMeet || "-" },
+    { header: "Check In", value: (v) => new Date(v.checkIn).toLocaleString() },
+    { header: "Check Out", value: (v) => (v.checkOut ? new Date(v.checkOut).toLocaleString() : "-") },
+  ];
+
   return (
     <div>
       <PageHeader
         title="Visitor Management"
         description="Log and track visitors entering the school premises."
+        actions={
+          <ExportButtons data={visitors} columns={exportColumns} filename="visitors" sheetName="Visitors" />
+        }
       />
 
       <Card className="max-w-xl mb-6">

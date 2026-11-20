@@ -4,15 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { GraduationCap, ChevronDown, X, Menu } from "lucide-react";
-import { navGroups } from "./nav-config";
+import { navGroups, navGroupsForRole } from "./nav-config";
 
 function SidebarContent({
   schoolName,
   logoUrl,
+  groups,
   onNavigate,
 }: {
   schoolName: string;
   logoUrl: string | null;
+  groups: typeof navGroups;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -20,7 +22,7 @@ function SidebarContent({
   // Pick the single longest-matching href across ALL nav items so a parent
   // route (e.g. /students) doesn't stay highlighted alongside a more
   // specific child route (e.g. /students/new) that also starts with it.
-  const allHrefs = navGroups.flatMap((g) => g.items.map((i) => i.href));
+  const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
   const activeHref = allHrefs
     .filter((href) => pathname === href || pathname.startsWith(href + "/"))
     .sort((a, b) => b.length - a.length)[0];
@@ -40,7 +42,7 @@ function SidebarContent({
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-        {navGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.label}>
             <p className="px-2 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               {group.label}
@@ -73,14 +75,23 @@ function SidebarContent({
   );
 }
 
-export function Sidebar({ schoolName, logoUrl }: { schoolName: string; logoUrl: string | null }) {
+export function Sidebar({
+  schoolName,
+  logoUrl,
+  role,
+}: {
+  schoolName: string;
+  logoUrl: string | null;
+  role: string;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const groups = navGroupsForRole(role);
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-64 shrink-0 bg-slate-900 h-screen sticky top-0">
-        <SidebarContent schoolName={schoolName} logoUrl={logoUrl} />
+        <SidebarContent schoolName={schoolName} logoUrl={logoUrl} groups={groups} />
       </aside>
 
       {/* Mobile top bar trigger */}
@@ -110,6 +121,7 @@ export function Sidebar({ schoolName, logoUrl }: { schoolName: string; logoUrl: 
             <SidebarContent
               schoolName={schoolName}
               logoUrl={logoUrl}
+              groups={groups}
               onNavigate={() => setMobileOpen(false)}
             />
           </aside>

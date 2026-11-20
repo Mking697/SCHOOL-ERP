@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 type ClassLevel = { id: string; name: string; sections: { id: string; name: string }[] };
 
@@ -24,6 +26,17 @@ export default function ClassesPage() {
   }
 
   useEffect(load, []);
+
+  type ExportRow = { className: string; section: string };
+  const exportRows: ExportRow[] = classes.flatMap((c) =>
+    c.sections.length > 0
+      ? c.sections.map((s) => ({ className: c.name, section: s.name }))
+      : [{ className: c.name, section: "-" }]
+  );
+  const exportColumns: ExportColumn<ExportRow>[] = [
+    { header: "Class", value: (r) => r.className },
+    { header: "Section", value: (r) => r.section },
+  ];
 
   async function addClass(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +74,13 @@ export default function ClassesPage() {
 
   return (
     <div>
-      <PageHeader title="Classes & Sections" description="Manage class levels and their sections" />
+      <PageHeader
+        title="Classes & Sections"
+        description="Manage class levels and their sections"
+        actions={
+          <ExportButtons data={exportRows} columns={exportColumns} filename="classes-sections" sheetName="Classes" />
+        }
+      />
       {error && <p className="text-rose-600 text-sm mb-4">{error}</p>}
 
       <form onSubmit={addClass} className="flex gap-2 mb-6 max-w-md">

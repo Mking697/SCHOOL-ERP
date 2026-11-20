@@ -18,6 +18,8 @@ import {
   Trophy,
   User,
   MoreHorizontal,
+  PartyPopper,
+  BookOpen,
 } from "lucide-react";
 import { BrandMark } from "@/components/ui/brand-mark";
 
@@ -30,9 +32,11 @@ const navItems = [
   { href: "/portal/notices", label: "Notices", icon: Megaphone },
   { href: "/portal/timetable", label: "Timetable", icon: CalendarClock },
   { href: "/portal/events", label: "Events", icon: CalendarDays },
+  { href: "/portal/holidays", label: "Holidays", icon: PartyPopper },
   { href: "/portal/library", label: "Library", icon: Library },
   { href: "/portal/transport", label: "My Bus", icon: Bus },
   { href: "/portal/behavior", label: "Behavior", icon: Trophy },
+  { href: "/portal/guide", label: "Guide Book", icon: BookOpen },
   { href: "/portal/profile", label: "Profile", icon: User },
 ];
 

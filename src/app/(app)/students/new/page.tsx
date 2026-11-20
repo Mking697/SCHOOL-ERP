@@ -14,6 +14,11 @@ export default function NewStudentPage() {
   const [classes, setClasses] = useState<ClassLevel[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<{
+    id: string;
+    admissionNo: string;
+    generatedPortalPassword: string | null;
+  } | null>(null);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -51,10 +56,54 @@ export default function NewStudentPage() {
         setError(data.error || "Admission fail hui");
         return;
       }
-      router.push(`/students/${data.id}`);
+      setSuccess({
+        id: data.id,
+        admissionNo: data.admissionNo,
+        generatedPortalPassword: data.generatedPortalPassword ?? null,
+      });
     } finally {
       setLoading(false);
     }
+  }
+
+  if (success) {
+    return (
+      <div>
+        <PageHeader title="Admission Complete" description="Student admit ho gaya" />
+        <Card className="max-w-lg">
+          <CardBody>
+            <p className="text-sm text-slate-600 mb-3">
+              Admission No: <span className="font-mono font-semibold text-slate-900">{success.admissionNo}</span>
+            </p>
+            {success.generatedPortalPassword ? (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                <p className="text-sm font-medium text-emerald-800 mb-1">
+                  Student / Parent Portal login ready ho gaya hai
+                </p>
+                <p className="text-xs text-emerald-700">
+                  Login URL: <span className="font-mono">/portal/login</span>
+                  <br />
+                  Admission No: <span className="font-mono font-semibold">{success.admissionNo}</span>
+                  <br />
+                  Password (student ki DOB): <span className="font-mono font-semibold">
+                    {success.generatedPortalPassword}
+                  </span>
+                </p>
+                <p className="text-xs text-emerald-600 mt-2">
+                  Ye password parent ko bata do -- wo login ke baad apne Profile se badal sakte hain.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-amber-600 mb-4">
+                DOB nahi di gayi thi, isliye portal login abhi activate nahi hua -- student detail page se
+                baad me activate kar sakte ho.
+              </p>
+            )}
+            <Button onClick={() => router.push(`/students/${success.id}`)}>Continue to Student Page</Button>
+          </CardBody>
+        </Card>
+      </div>
+    );
   }
 
   return (

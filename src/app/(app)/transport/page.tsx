@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bus, KeyRound, MapPin } from "lucide-react";
+import Link from "next/link";
+import { Bus, KeyRound, MapPin, MapPinned } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import RouteStopsMap from "./route-stops-map";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 type Route = {
   id: string;
@@ -18,7 +22,7 @@ type Route = {
   currentLat?: number | null;
   currentLng?: number | null;
   locationUpdatedAt?: string | null;
-  stops: { id: string; name: string }[];
+  stops: { id: string; name: string; order: number; lat: number | null; lng: number | null }[];
   students: { id: string }[];
 };
 
@@ -32,6 +36,18 @@ export default function TransportPage() {
   }
 
   useEffect(load, []);
+
+  const exportColumns: ExportColumn<Route>[] = [
+    { header: "Route Name", value: (r) => r.name },
+    { header: "Vehicle Number", value: (r) => r.vehicleNumber || "-" },
+    { header: "Driver Name", value: (r) => r.driverName || "-" },
+    { header: "Driver Phone", value: (r) => r.driverPhone || "-" },
+    { header: "Driver App Active", value: (r) => (r.hasDriverLogin ? "Yes" : "No") },
+    { header: "Students Assigned", value: (r) => r.students.length },
+    { header: "Current Lat", value: (r) => r.currentLat ?? "-" },
+    { header: "Current Lng", value: (r) => r.currentLng ?? "-" },
+    { header: "Location Updated At", value: (r) => r.locationUpdatedAt || "-" },
+  ];
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,7 +71,18 @@ export default function TransportPage() {
       <PageHeader
         title="Transport Management"
         description="Manage transport routes, vehicles and drivers."
+        actions={
+          <ExportButtons data={routes} columns={exportColumns} filename="transport-routes" sheetName="Routes" />
+        }
       />
+
+      <Link
+        href="/transport/live"
+        className="inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-700 mb-4"
+      >
+        <MapPinned className="w-4 h-4" />
+        Open Live Tracking Map (all buses)
+      </Link>
 
       <Card className="max-w-xl mb-6">
         <CardBody>
@@ -115,6 +142,7 @@ export default function TransportPage() {
 
 function RouteCard({ route: r, onChange }: { route: Route; onChange: () => void }) {
   const [open, setOpen] = useState(false);
+  const [showStops, setShowStops] = useState(false);
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -198,6 +226,15 @@ function RouteCard({ route: r, onChange }: { route: Route; onChange: () => void 
               Cancel
             </Button>
           </form>
+        )}
+        <Button variant="ghost" size="sm" className="mt-2" onClick={() => setShowStops((v) => !v)}>
+          <MapPin className="w-3.5 h-3.5" />
+          {showStops ? "Hide Stops Map" : `Manage Stops (${r.stops.length})`}
+        </Button>
+        {showStops && (
+          <div className="mt-3">
+            <RouteStopsMap routeId={r.id} stops={r.stops} onChange={onChange} />
+          </div>
         )}
         {r.hasDriverLogin && !r.vehicleNumber && (
           <p className="text-xs text-rose-600 mt-2">

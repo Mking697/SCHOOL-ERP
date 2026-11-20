@@ -2,16 +2,26 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Truck, MapPin, LogOut, Play, Square, AlertCircle } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Truck, MapPin, LogOut, Play, Square, AlertCircle, Info } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
+const MapContainer = dynamic(() => import("@/components/ui/leaflet-base").then((m) => m.MapContainer), {
+  ssr: false,
+});
+const TileLayer = dynamic(() => import("@/components/ui/leaflet-base").then((m) => m.DefaultTiles), {
+  ssr: false,
+});
+const Marker = dynamic(() => import("@/components/ui/leaflet-base").then((m) => m.Marker), { ssr: false });
+const Popup = dynamic(() => import("@/components/ui/leaflet-base").then((m) => m.Popup), { ssr: false });
 
 type Route = {
   id: string;
   name: string;
   vehicleNumber: string | null;
   driverName: string | null;
-  stops: { id: string; name: string }[];
+  stops: { id: string; name: string; lat: number | null; lng: number | null }[];
 };
 
 export default function DriverDashboard({ route }: { route: Route }) {
@@ -79,9 +89,22 @@ export default function DriverDashboard({ route }: { route: Route }) {
             <p className="text-[11px] text-amber-200 leading-tight">{route.vehicleNumber}</p>
           </div>
         </div>
-        <button onClick={handleLogout} className="p-2 rounded-lg hover:bg-white/10">
-          <LogOut className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <div className="group relative">
+            <button className="p-2 rounded-lg hover:bg-white/10" title="Kaise use karein">
+              <Info className="w-4 h-4" />
+            </button>
+            <div className="hidden group-hover:block absolute right-0 top-10 w-64 bg-white text-slate-700 text-xs rounded-lg shadow-lg p-3 z-10">
+              <p className="font-semibold mb-1">Kaise use karein:</p>
+              <p>1. "Start Trip" dabao -- aapka live location school ko dikhna shuru ho jaayega.</p>
+              <p className="mt-1">2. Trip khatam hone pe "Stop Trip" dabao.</p>
+              <p className="mt-1">3. Stops aur route map niche dikhti hai.</p>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="p-2 rounded-lg hover:bg-white/10">
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 p-4 max-w-md w-full mx-auto space-y-4">
@@ -145,6 +168,37 @@ export default function DriverDashboard({ route }: { route: Route }) {
             )}
           </CardBody>
         </Card>
+
+        {route.stops.some((s) => s.lat !== null && s.lng !== null) && (
+          <Card>
+            <CardBody className="p-0">
+              <div className="rounded-lg overflow-hidden" style={{ height: 224 }}>
+                <MapContainer
+                  center={[
+                    route.stops.find((s) => s.lat !== null)?.lat as number,
+                    route.stops.find((s) => s.lng !== null)?.lng as number,
+                  ]}
+                  zoom={13}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer />
+                  {route.stops
+                    .filter((s) => s.lat !== null && s.lng !== null)
+                    .map((s) => (
+                      <Marker key={s.id} position={[s.lat as number, s.lng as number]}>
+                        <Popup>{s.name}</Popup>
+                      </Marker>
+                    ))}
+                  {lastSent && (
+                    <Marker position={[lastSent.lat, lastSent.lng]}>
+                      <Popup>Aap yahan hain</Popup>
+                    </Marker>
+                  )}
+                </MapContainer>
+              </div>
+            </CardBody>
+          </Card>
+        )}
       </main>
     </div>
   );

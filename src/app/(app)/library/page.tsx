@@ -7,6 +7,8 @@ import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Label } from "@/components/ui/input";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 type Book = {
   id: string;
@@ -83,11 +85,28 @@ export default function LibraryPage() {
     loadAll();
   }
 
+  const bookColumns: ExportColumn<Book>[] = [
+    { header: "Title", value: (b) => b.title },
+    { header: "Author", value: (b) => b.author || "-" },
+    { header: "Total Copies", value: (b) => b.totalCopies },
+    { header: "Available Copies", value: (b) => b.availableCopies },
+  ];
+  const issueColumns: ExportColumn<Issue>[] = [
+    { header: "Book", value: (i) => i.book.title },
+    { header: "Student", value: (i) => `${i.student.firstName} ${i.student.lastName}` },
+    { header: "Admission No", value: (i) => i.student.admissionNo },
+    { header: "Due Date", value: (i) => new Date(i.dueDate).toLocaleDateString() },
+    { header: "Status", value: (i) => i.status },
+  ];
+
   return (
     <div>
       <PageHeader
         title="Library Management"
         description="Manage books, issues and returns."
+        actions={
+          <ExportButtons data={books} columns={bookColumns} filename="library-books" sheetName="Books" />
+        }
       />
       {error && <p className="text-rose-600 text-sm mb-4">{error}</p>}
 
@@ -182,7 +201,10 @@ export default function LibraryPage() {
         </Card>
       </div>
 
-      <h2 className="font-semibold text-sm text-slate-900 mb-2">Currently Issued</h2>
+      <h2 className="font-semibold text-sm text-slate-900 mb-2 flex items-center justify-between">
+        <span>Currently Issued</span>
+        <ExportButtons data={issues} columns={issueColumns} filename="library-book-issues" sheetName="Book Issues" />
+      </h2>
       <Card className="max-w-3xl overflow-hidden">
         <Table>
           <Thead>

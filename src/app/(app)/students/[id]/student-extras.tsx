@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input, Select } from "@/components/ui/input";
 import { Plus } from "lucide-react";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 type Behavior = { id: string; type: string; category?: string; description: string; createdAt: string };
 type Achievement = { id: string; title: string; category?: string; date: string };
@@ -46,10 +48,31 @@ export default function StudentExtras({
     router.refresh();
   }
 
+  const behaviorColumns: ExportColumn<Behavior>[] = [
+    { header: "Type", value: (b) => b.type },
+    { header: "Category", value: (b) => b.category || "-" },
+    { header: "Description", value: (b) => b.description },
+    { header: "Date", value: (b) => new Date(b.createdAt).toLocaleDateString() },
+  ];
+  const achievementColumns: ExportColumn<Achievement>[] = [
+    { header: "Title", value: (a) => a.title },
+    { header: "Category", value: (a) => a.category || "-" },
+    { header: "Date", value: (a) => new Date(a.date).toLocaleDateString() },
+  ];
+
   return (
     <div className="grid grid-cols-2 gap-6 max-w-2xl mt-6">
       <div>
-        <h2 className="font-semibold text-slate-900 mb-2">Behavior / Discipline</h2>
+        <h2 className="font-semibold text-slate-900 mb-2 flex items-center justify-between">
+          <span>Behavior / Discipline</span>
+          <ExportButtons
+            data={behaviorRecords}
+            columns={behaviorColumns}
+            filename={`behavior-records-${studentId}`}
+            sheetName="Behavior Records"
+            size="sm"
+          />
+        </h2>
         <Card className="mb-3">
           <CardBody>
             <form onSubmit={submitBehavior} className="space-y-2">
@@ -90,7 +113,16 @@ export default function StudentExtras({
       </div>
 
       <div>
-        <h2 className="font-semibold text-slate-900 mb-2">Achievements</h2>
+        <h2 className="font-semibold text-slate-900 mb-2 flex items-center justify-between">
+          <span>Achievements</span>
+          <ExportButtons
+            data={achievements}
+            columns={achievementColumns}
+            filename={`achievements-${studentId}`}
+            sheetName="Achievements"
+            size="sm"
+          />
+        </h2>
         <Card className="mb-3">
           <CardBody>
             <form onSubmit={submitAchievement} className="space-y-2">

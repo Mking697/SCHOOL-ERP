@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, BookOpen } from "lucide-react";
 
 export function Topbar({
   schoolName,
@@ -44,6 +44,13 @@ export function Topbar({
         <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-semibold text-sm">
           {userEmail.charAt(0).toUpperCase()}
         </div>
+        <a
+          href="/guide"
+          className="text-slate-400 hover:text-indigo-600 transition-colors p-2 rounded-lg hover:bg-indigo-50"
+          title="Guide Book -- system kaise use kare"
+        >
+          <BookOpen className="w-4 h-4" />
+        </a>
         <button
           onClick={handleLogout}
           className="text-slate-400 hover:text-rose-600 transition-colors p-2 rounded-lg hover:bg-rose-50"

@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 // Driver App has its own session world, same isolation pattern as the
 // student/parent portal -- a driver login can never be confused with a
@@ -26,6 +27,8 @@ export function verifyDriverSession(token: string): DriverSessionPayload | null 
 }
 
 export async function getDriverSession(): Promise<DriverSessionPayload | null> {
+  // JWT expiry must be verified at request time, not during prerender.
+  await connection();
   const cookieStore = await cookies();
   const token = cookieStore.get(DRIVER_SESSION_COOKIE)?.value;
   return token ? verifyDriverSession(token) : null;

@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Table, Thead, Th, Td, Tr, EmptyRow } from "@/components/ui/table";
 import { Badge, statusTone } from "@/components/ui/badge";
 import Link from "next/link";
+import ExportButtons from "@/components/export-buttons";
+import type { ExportColumn } from "@/lib/export";
 
 export const instant = false;
 
@@ -16,9 +18,33 @@ export default async function PortalFeesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const exportRows = invoices.map((inv) => {
+    const paid = inv.payments.reduce((s, p) => s + Number(p.amount), 0);
+    return {
+      title: inv.title,
+      dueDate: new Date(inv.dueDate).toLocaleDateString(),
+      total: Number(inv.totalAmount),
+      paid,
+      status: inv.status,
+    };
+  });
+  const columns: ExportColumn<(typeof exportRows)[number]>[] = [
+    { header: "Title", value: (r) => r.title },
+    { header: "Due Date", value: (r) => r.dueDate },
+    { header: "Total Amount", value: (r) => r.total },
+    { header: "Paid Amount", value: (r) => r.paid },
+    { header: "Status", value: (r) => r.status },
+  ];
+
   return (
     <div>
-      <PageHeader title="Fee Invoices" description="View and pay your fees online" />
+      <PageHeader
+        title="Fee Invoices"
+        description="View and pay your fees online"
+        actions={
+          <ExportButtons data={exportRows} columns={columns} filename="my-fee-invoices" sheetName="Fee Invoices" />
+        }
+      />
       <Card>
         <Table>
           <Thead>

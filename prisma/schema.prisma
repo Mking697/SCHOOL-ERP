@@ -14,7 +14,9 @@ datasource db {
 
 enum Role {
   SUPER_ADMIN
+  PRINCIPAL
   SCHOOL_ADMIN
+  HR
   TEACHER
   ACCOUNTANT
   PARENT
@@ -57,6 +59,7 @@ model User {
 
   teacher Teacher?
   parent  Parent?
+  staff   Staff?
 }
 
 model ClassLevel {
@@ -176,12 +179,146 @@ model TimetableEntry {
   periodNumber Int
   subject      Subject? @relation(fields: [subjectId], references: [id])
   subjectId    String?
+  // teacherId is the source of truth once set (lets a teacher's own
+  // dashboard reliably query "my periods today"); teacherName is kept as a
+  // free-text fallback for entries created before this field existed, or
+  // when no matching Staff record exists yet.
+  teacher      Staff?   @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  teacherId    String?
   teacherName  String?
   startTime    String? // "09:00"
   endTime      String? // "09:45"
   createdAt    DateTime @default(now())
 
   @@unique([sectionId, dayOfWeek, periodNumber])
+}
+
+// A school-wide period/bell schedule (typically 8 periods + a lunch break),
+// configured once and reused as the column headers for every section's
+// timetable grid, and as the source of "what time does period N start/end"
+// for the teacher dashboard's live current/next period widget.
+model Period {
+  id           String   @id @default(cuid())
+  periodNumber Int      @unique // 1..8 for teaching periods; use a distinct
+  // number (e.g. 0) for a lunch break slot so it sorts first/can be placed
+  // anywhere without colliding with a real teaching period.
+  label        String // "Period 1", "Lunch Break"
+  startTime    String // "09:00"
+  endTime      String // "09:45"
+  isBreak      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// --- Accounting (Phase 1: Chart of Accounts + double-entry Journal) ---
+// Every money movement becomes a balanced Journal Entry (sum of debits ==
+// sum of credits across its lines) against this Chart of Accounts. P&L,
+// Balance Sheet, Trial Balance, Receivables/Payables Ageing and the Petty
+// Cash triple-column book are all DERIVED from this one ledger, not
+// separate data stores.
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  INCOME
+  EXPENSE
+}
+
+model Account {
+  id        String      @id @default(cuid())
+  code      String      @unique
+  name      String
+  type      AccountType
+  isSystem  Boolean     @default(false) // seeded default account, not user-deletable
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+
+  journalLines JournalLine[]
+  bills        Bill[]
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  date      DateTime
+  narration String
+  reference String? // e.g. "Invoice #2026-0001", "Payslip 2026-10", "Manual"
+  createdBy String? // staff name/email, free text (no FK -- keep ledger even if staff is removed)
+  createdAt DateTime @default(now())
+
+  lines       JournalLine[]
+  bill        Bill?
+  billPayment BillPayment?
+}
+
+model JournalLine {
+  id             String       @id @default(cuid())
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  journalEntryId String
+  account        Account      @relation(fields: [accountId], references: [id])
+  accountId      String
+  debit          Decimal      @default(0) @db.Decimal(12, 2)
+  credit         Decimal      @default(0) @db.Decimal(12, 2)
+
+  @@index([accountId])
+}
+
+// --- Vendor Payables (Phase 2) ---
+// A Bill always books two journal lines at creation time (Dr the chosen
+// Expense/Asset account, Cr Vendor Payables) and each BillPayment books
+// another two (Dr Vendor Payables, Cr Cash/Bank) -- the ledger stays the
+// single source of truth, Bill/BillPayment are just a vendor-friendly view
+// over it.
+model Vendor {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime @default(now())
+
+  bills Bill[]
+}
+
+enum BillStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+}
+
+model Bill {
+  id               String       @id @default(cuid())
+  vendor           Vendor       @relation(fields: [vendorId], references: [id])
+  vendorId         String
+  billNumber       String?
+  billDate         DateTime
+  dueDate          DateTime
+  description      String
+  amount           Decimal      @db.Decimal(12, 2)
+  expenseAccount   Account      @relation(fields: [expenseAccountId], references: [id])
+  expenseAccountId String
+  status           BillStatus   @default(UNPAID)
+  journalEntry     JournalEntry @relation(fields: [journalEntryId], references: [id])
+  journalEntryId   String       @unique
+  createdAt        DateTime     @default(now())
+
+  // Receipt/invoice proof -- stored the same way the school logo/student
+  // photo are (a data: URL string), capped client+server side so this
+  // never becomes a filesystem/S3 dependency for a self-hosted product.
+  attachmentUrl  String?
+  attachmentName String?
+
+  payments BillPayment[]
+}
+
+model BillPayment {
+  id             String       @id @default(cuid())
+  bill           Bill         @relation(fields: [billId], references: [id], onDelete: Cascade)
+  billId         String
+  amount         Decimal      @db.Decimal(12, 2)
+  method         String // CASH | BANK_TRANSFER | CHEQUE
+  paidAt         DateTime     @default(now())
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id])
+  journalEntryId String       @unique
 }
 
 model Holiday {
@@ -314,8 +451,49 @@ model Staff {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Optional login account for the Staff & Admin app, set up separately by an
+  // admin from the staff record (not created automatically on Add Staff).
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String? @unique
+
   leaveRequests   LeaveRequest[]
   workAssignments WorkAssignment[]
+  timetableEntries TimetableEntry[]
+  attendance       StaffAttendance[]
+  payslips         Payslip[]
+}
+
+// Daily staff/teacher attendance -- same shape as the existing Student
+// Attendance model, marked by HR (policy/reports) or by a Teacher for their
+// own record via the dashboard.
+model StaffAttendance {
+  id        String   @id @default(cuid())
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId   String
+  date      DateTime
+  status    String // PRESENT | ABSENT | LATE | HALF_DAY
+  markedBy  String?
+  createdAt DateTime @default(now())
+
+  @@unique([staffId, date])
+}
+
+// One row per staff member per calendar month ("2026-10"). Generated by
+// Accountant/Principal from Staff.salary, then marked paid when settled --
+// this is the first real payment-history record; Staff.salary itself stays
+// just the configured monthly figure, not a ledger.
+model Payslip {
+  id        String    @id @default(cuid())
+  staff     Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staffId   String
+  month     String // "2026-10"
+  amount    Decimal   @db.Decimal(10, 2)
+  status    String    @default("PENDING") // PENDING | PAID
+  paidOn    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([staffId, month])
 }
 
 model LeaveRequest {
@@ -398,6 +576,8 @@ model Stop {
   routeId String
   name    String
   order   Int            @default(0)
+  lat     Float?
+  lng     Float?
 }
 
 model Book {
