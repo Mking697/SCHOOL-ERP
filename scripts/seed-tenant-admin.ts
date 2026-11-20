@@ -47,10 +47,15 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(adminPassword, 10);
   await prisma.user.create({
-    data: { name: adminName, email: adminEmail, passwordHash, role: "SCHOOL_ADMIN" },
+    // First hosted-tenant account must get the SAME unrestricted access as the
+    // self-host /setup wizard's first account (role SUPER_ADMIN) -- NOT the
+    // restricted SCHOOL_ADMIN role, which (per nav-config.ts's department
+    // ownership design) only sees Communication/Facilities/System and hides
+    // Students/Staff/Attendance/Fees/Accounting/etc.
+    data: { name: adminName, email: adminEmail, passwordHash, role: "SUPER_ADMIN" },
   });
 
-  console.log(`Tenant seeded: school "${school.name}" + SCHOOL_ADMIN ${adminEmail}`);
+  console.log(`Tenant seeded: school "${school.name}" + SUPER_ADMIN ${adminEmail}`);
 }
 
 main()
