@@ -87,6 +87,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Classes & Sections is HR-only to MANAGE (create/edit), but the class/section
+  // NAME list itself is non-sensitive shared reference data that Timetable,
+  // Exams, Homework, Virtual Classroom and Fees/Generate Invoices all need to
+  // populate dropdowns for roles (Teacher/Accountant/etc) that are not HR.
+  // Without this, those pages silently 403 on GET /api/classes for every
+  // non-HR role and their class dropdowns never populate. Mutations
+  // (POST/PATCH/DELETE) still go through the normal HR_ONLY check below.
+  if (request.method === "GET" && pathname === "/api/classes") {
+    return NextResponse.next();
+  }
+
   // Role-based access control: a route's allowed roles come from the same
   // nav-config used to build the sidebar, so a role that can't SEE a link
   // also can't reach it directly by URL (API included).

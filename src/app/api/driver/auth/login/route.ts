@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signDriverSession, DRIVER_SESSION_COOKIE } from "@/lib/driver-auth";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const { vehicleNumber, password } = await req.json();
@@ -9,6 +10,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Vehicle Number aur Password dono chahiye" },
       { status: 400 }
+    );
+  }
+
+  const limitKey = `driver-login:${clientIp(req)}:${String(vehicleNumber).toLowerCase()}`;
+  const { allowed, retryAfterMs } = rateLimit(limitKey, 10, 15 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Bahut saari koshish ho gayi -- thodi der baad try karo" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
     );
   }
 
@@ -27,6 +37,7 @@ export async function POST(req: NextRequest) {
   const res = NextResponse.json({ ok: true });
   res.cookies.set(DRIVER_SESSION_COOKIE, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
     sameSite: "lax",

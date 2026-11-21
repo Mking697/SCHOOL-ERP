@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { signSession, SESSION_COOKIE } from "@/lib/auth";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
 
   if (!email || !password) {
     return NextResponse.json({ error: "Email aur password required hai" }, { status: 400 });
+  }
+
+  const limitKey = `staff-login:${clientIp(req)}:${String(email).trim().toLowerCase()}`;
+  const { allowed, retryAfterMs } = rateLimit(limitKey, 10, 15 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Bahut saari koshish ho gayi -- thodi der baad try karo" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
   }
 
   const user = await prisma.user.findUnique({ where: { email: String(email).trim().toLowerCase() } });
